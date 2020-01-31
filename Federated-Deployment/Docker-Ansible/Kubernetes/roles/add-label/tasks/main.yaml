@@ -1,0 +1,12 @@
+---
+- name: Get Hostname For Master Node # We haven't add any labels to this point
+  shell: echo {{master_become_pass}} | sudo -S kubectl get nodes -o json | jq --join-output '.items[] | select(.metadata.labels."node-role.kubernetes.io\/master") | .metadata.name'
+  # We use "--join-output" here as we want to have a single hostname without a "\n" in the end.
+  register: hostName
+
+- name:  Add Label Name To Master Node
+  shell: >
+    echo {{master_become_pass}} | sudo -S bash -c
+    'kubectl label nodes {{ hostName.stdout }} name={{ hostName.stdout }}
+    && kubectl label nodes {{ hostName.stdout }} role=master'
+  ignore_errors: true # The labels might be already in place.

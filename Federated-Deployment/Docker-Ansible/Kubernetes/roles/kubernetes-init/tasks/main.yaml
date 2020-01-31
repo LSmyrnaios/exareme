@@ -1,0 +1,56 @@
+---
+# TODO - Find a way to automatically run all commands with sudo and give the password automatically, so the shell-cmds here will be clearer..
+
+- name: Check If Kubernetes Has Already Been Initialized
+  shell: echo {{master_become_pass}} | sudo -S kubectl get componentstatuses
+  register: kubernetes_status
+  failed_when: kubernetes_status.rc != 0
+  ignore_errors: true
+
+- name: PrintForSuccessCheck-KubernetesStatus
+  when: kubernetes_status.rc == 0
+  debug:
+    msg: kubernetes is running!
+
+- name: PrintForFailedCheck-KubernetesStatus
+  when: kubernetes_status.rc != 0
+  debug:
+    msg: kubernetes is not running.. going to initialize it
+
+
+- name: Initialize Kubernetes
+  when: kubernetes_status.rc != 0
+  shell: >
+    echo {{master_become_pass}} | sudo -S bash -c
+    '(kubeadm reset --force && rm -rf $HOME/.kube/config)
+    && kubeadm init --kubernetes-version=stable --pod-network-cidr=192.168.0.0/16
+    && (mkdir -p $HOME/.kube && cp -i /etc/kubernetes/admin.conf $HOME/.kube/config && chown $(id -u):$(id -g) $HOME/.kube/config)
+    && kubectl apply -f https://docs.projectcalico.org/v3.11/manifests/calico.yaml'
+  register: init_result
+  failed_when: init_result.rc != 0
+  # TODO - Add a handler to rerun the kube-init.. It is possible that the kube is already initialized but the "kubectl get cs" reports falsly that it isn't
+  # And then the kub-init fails because the configs are already there and it panics.. :-P
+  # In this case, find a way to run: "echo {{master_become_pass}} | sudo -S kubeadm reset --force && echo {{master_become_pass}} | sudo -S rm -rf $HOME/.kube/config" ()
+  # The above command will make sure to hard-reset the kubernetes.
+  # Then rerun this task (kube-init).
+  run_once: true
+
+
+# TODO - Check this for secure kubernetes overlay:   kubectl apply -f https://docs.docker.com/ee/ucp/kubernetes/ucp-secureoverlay.yml
+#Check for info:   https://docs.docker.com/ee/ucp/kubernetes/kubernetes-network-encryption/
+
+#- name: printForFailedKubeInit
+#  when: init_result is failed
+#  debug:
+#    msg: kubeadm init failed!
+
+
+# TODO - Test the "ROOK" filesystem... v.0.8 (same AS in DARE)
+- name: Configure ROOK Shared storage
+  shell: >
+    echo {{master_become_pass}} | sudo -S bash -c
+    '[ ! -d "rook/" ] && git clone --single-branch --branch release-0.8 https://github.com/rook/rook.git
+    ; cd rook/cluster/examples/kubernetes/ceph
+    && kubectl create -f operator.yaml && kubectl create -f cluster.yaml && kubectl create -f filesystem.yaml && kubectl create -f storageclass.yaml'
+    && echo {{master_become_pass}} | sudo -S kubectl patch storageclass rook-ceph-block -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+  run_once: true

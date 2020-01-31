@@ -1,0 +1,34 @@
+---
+- hosts: master
+  name: Get Worker's Join Command
+  remote_user: "{{ hostvars['master']['remote_user'] }}"
+  become: yes
+  become_user: "{{ hostvars['master']['become_user'] }}"
+  roles:
+   - worker-join-command
+   - delete-worker-node
+  vars:
+    my_host: "{{ lookup('env', 'my_host') }}"   # TODO - Added by me.. not sure if it's ok..
+    my_name: "{{ hostvars[my_host]['hostname'] }}"
+
+- hosts: '{{ my_host }}'
+  name: Join Worker In Kubernetes
+  remote_user: "{{ hostvars[my_host]['remote_user'] }}"
+  become: yes
+  become_user: "{{ hostvars[my_host]['become_user'] }}"
+  roles:
+    - join-workers
+  vars:
+    my_host: "{{ lookup('env', 'my_host') }}"
+    my_name: "{{ hostvars[my_host]['hostname'] }}"
+
+- hosts: master
+  name: Add Label To Worker
+  remote_user: "{{ hostvars['master']['remote_user'] }}"
+  become: yes
+  become_user: "{{ hostvars['master']['become_user'] }}"
+  roles:
+   - add-worker-label
+  vars:
+   my_host: "{{ lookup('env', 'my_host') }}"
+   my_name: "{{ hostvars[my_host]['hostname'] }}"

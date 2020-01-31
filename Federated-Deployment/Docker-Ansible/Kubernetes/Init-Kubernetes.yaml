@@ -1,0 +1,10 @@
+---
+- hosts: master
+  name: Initialize Kubernetes
+  remote_user: "{{ hostvars['master']['remote_user'] }}"
+  become: yes
+  become_user: "{{ hostvars['master']['become_user'] }}"
+  roles:
+   - kubernetes-init
+   - add-label
+   - copy-directory

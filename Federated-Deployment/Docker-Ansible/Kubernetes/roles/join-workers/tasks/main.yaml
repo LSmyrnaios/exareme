@@ -1,0 +1,11 @@
+---
+#- name: Prin join command before execution
+#  debug:
+#    msg: "echo {{ansible_become_pass}} | sudo -S {{ hostvars['master']['worker_join_command']['stdout'] }}"
+
+- name: Join Kubernetes
+  # It's advisable to always run "kubeadm reset" before "kubeadm join"
+  shell: >
+    echo {{hostvars[my_host]['ansible_become_pass']}} | sudo -S bash -c
+    'kubeadm reset --force && swapoff -a && {{ hostvars['master']['worker_join_command']['stdout'] }}'
+  register: join

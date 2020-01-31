@@ -1,0 +1,33 @@
+version: '3'
+
+#networks:
+#  net-federation:
+#    external:
+#      name: mip-federation
+
+services:
+  exareme:
+    image: ${EXAREME_IMAGE}
+    environment:
+      - CONSULURL=${EXAREME_KEYSTORE}
+      - NODE_NAME=${FEDERATION_NODE}
+      - DOCKER_DATA_FOLDER=${DOCKER_DATA_FOLDER}
+      - DOCKER_METADATA_FOLDER=${DOCKER_DATA_FOLDER}
+      - EXAREME_ACTIVE_WORKERS_PATH=active_workers
+      - EXAREME_MASTER_PATH=master
+      - DATA=data
+      - TAG=dev     #dev or prod
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints:
+          - node.labels.role == worker # Ensures we only start on worker nodes
+          - node.labels.name == ${FEDERATION_NODE}
+#    networks:
+#      - "net-federation"
+    volumes:
+      - ${LOCAL_DATA_FOLDER}:${DOCKER_DATA_FOLDER}

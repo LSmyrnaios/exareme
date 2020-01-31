@@ -1,0 +1,93 @@
+---
+- name: Find Leader
+# Maybe the nodes are unlabeled at this point, so use this type of hostname extraction.
+  shell: echo {{master_become_pass}} | sudo -S kubectl get nodes -o json | jq --join-output '.items[] | select(.metadata.labels."node-role.kubernetes.io\/master") | .metadata.name'
+  register: leader
+  tags:
+    - exareme
+
+
+#Todo if we have multiple masters and maybe leader.stdout -> leader.stdout_lines with_items? (original todo from exareme)
+- name: Run Exareme Master
+  # Un-taint the master node in order for master-pods to get assigned to the master-node.
+  shell: >
+    echo {{master_become_pass}} | sudo -S bash -c
+    'kubectl taint nodes --all node-role.kubernetes.io/master-
+    ; env FEDERATION_NODE={{ leader.stdout }} FEDERATION_ROLE=master
+    EXAREME_IMAGE={{ EXAREME_IMAGE }}:{{ EXAREME_TAG }} EXAREME_KEYSTORE={{ EXAREME_KEYSTORE }}
+    DOCKER_DATA_FOLDER="{{ DOCKER_DATA_FOLDER }}" LOCAL_DATA_FOLDER="{{ data_path }} "
+    kompose up -f docker-kompose-master.yml'
+  args:
+    chdir: "{{ home_path }}Kompose-Files/"
+  environment:
+    FEDERATION_NODE: "{{ leader.stdout }}"
+    FEDERATION_ROLE: "master"
+    EXAREME_IMAGE: "{{ EXAREME_IMAGE }}:{{ EXAREME_TAG }}"
+    EXAREME_KEYSTORE: "{{ EXAREME_KEYSTORE }}"
+    DOCKER_DATA_FOLDER: "{{ DOCKER_DATA_FOLDER }}"
+    LOCAL_DATA_FOLDER: "{{ data_path }}"
+  tags:
+    - exareme
+
+
+# TODO - Add Kubernetes Dashboard, as Portainer does not support Kubernetes.
+  # TODO - Rename portainer-vars to kubernetes-like ones.. (in ./group_vars/all.yaml)
+#- name: Dashboard folder
+#  shell: >
+#         test -d {{ PORTAINER_DATA }}
+#         || mkdir -p {{ PORTAINER_DATA }}
+#         || ( echo Failed to create {{ PORTAINER_DATA }}; exit 1 )
+
+
+#- name: Remove Dashboard Service if it already exists
+#  shell: >
+#    echo {{master_become_pass}} | sudo -S bash -c
+#    '(kubectl delete service mip_dashboard || true) ; kubectl delete ns kubernetes-dashboard'
+#  ignore_errors: true
+#  tags:
+#    -dashboard
+#
+#- name: Run Dashboard Service
+#  # TODO - We have to make the arrangements for authorization.. then run the following:
+#  shell: >
+#    echo {{master_become_pass}} | sudo -S bash -c
+#    'kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-rc2/aio/deploy/recommended.yaml
+#    ; kubectl proxy &'
+## The above "&" will let the dashboard run in the background
+#  tags:
+#    -dashboard
+
+
+# We can access on browser with: http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
+
+# TODO - This is the service to use, but not sure if we need it..
+#         kubectl create service \
+#         --docker="unix:///var/run/docker.sock" \
+#         --constraint 'node.labels.role == master' \
+#         --detach=true \
+#         --mount type=bind,src={{ PORTAINER_DATA }},dst=/data \
+#         --name mip_dashboard
+#  tags:
+#    - dashboard
+
+
+- name: Run Exareme Workers
+  # No need to un-taint the worker nodes, as no taints exist for them.
+  shell: >
+    echo {{master_become_pass}} | sudo -S
+    env FEDERATION_NODE={{ hostvars[item]['hostname'] }} FEDERATION_ROLE=worker
+    EXAREME_IMAGE={{ EXAREME_IMAGE }}:{{ EXAREME_TAG }} EXAREME_KEYSTORE={{ EXAREME_KEYSTORE }}
+    DOCKER_DATA_FOLDER="{{ DOCKER_DATA_FOLDER }}" LOCAL_DATA_FOLDER="{{ hostvars[item]['data_path'] }}"
+    kompose up -f docker-kompose-worker.yml
+  args:
+    chdir: "{{ home_path }}Kompose-Files/"
+  environment:
+    FEDERATION_NODE: "{{ hostvars[item]['hostname'] }}"
+    FEDERATION_ROLE: "worker"
+    EXAREME_IMAGE: "{{ EXAREME_IMAGE }}:{{ EXAREME_TAG }}"
+    EXAREME_KEYSTORE: "{{ EXAREME_KEYSTORE }}"
+    DOCKER_DATA_FOLDER: "{{ DOCKER_DATA_FOLDER }}"
+    LOCAL_DATA_FOLDER: "{{ hostvars[item]['data_path'] }}"
+  with_items: "{{ groups['workers'] }}"
+  tags:
+    - exareme

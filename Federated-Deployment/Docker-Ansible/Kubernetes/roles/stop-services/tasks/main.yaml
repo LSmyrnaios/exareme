@@ -1,0 +1,67 @@
+# TODO - What's the equivalent for Kubernetes?
+# TODO - I should delete all services, all pods and all nodes and deployments.. and others
+# kubectl delete daemonsets,replicasets,services,deployments,pods,rc,ing,statefulset --all
+---
+- name: Find Leader
+  # Maybe the nodes are unlabeled at this point, so use this type of hostname extraction.
+  shell: echo {{master_become_pass}} | sudo -S kubectl get nodes -o json | jq --join-output '.items[] | select(.metadata.labels."node-role.kubernetes.io\/master") | .metadata.name'
+  register: leader
+  tags:
+    - exareme
+
+# Stop the workers before stopping the master.
+- name: Kompose down workers
+  shell: >
+    echo {{master_become_pass}} | sudo -S
+    env FEDERATION_NODE="{{ hostvars[item]['hostname'] }}"
+    EXAREME_IMAGE="{{ EXAREME_IMAGE }}:{{ EXAREME_TAG }}" EXAREME_KEYSTORE="{{ EXAREME_KEYSTORE }}"
+    DOCKER_DATA_FOLDER="{{ DOCKER_DATA_FOLDER }}" LOCAL_DATA_FOLDER="{{ hostvars[item]['data_path'] }}"
+    kompose down -f docker-kompose-worker.yml
+  with_items: "{{ groups['workers'] }}"
+  args:
+    chdir: "{{ home_path }}Kompose-Files/"
+  tags:
+    - exareme
+
+- name: Kompose down master
+  shell: >
+    echo {{master_become_pass}} | sudo -S
+    env FEDERATION_NODE={{ leader.stdout }} FEDERATION_ROLE=master
+    EXAREME_IMAGE={{ EXAREME_IMAGE }}:{{ EXAREME_TAG }} EXAREME_KEYSTORE={{ EXAREME_KEYSTORE }}
+    DOCKER_DATA_FOLDER="{{ DOCKER_DATA_FOLDER }}" LOCAL_DATA_FOLDER="{{ data_path }}"
+    kompose down -f docker-kompose-master.yml
+  args:
+    chdir: "{{ home_path }}Kompose-Files/"
+  tags:
+    - exareme
+
+
+- name: Kill remaining Kubernetes staff, but keep it initialized.
+# Do not delete nodes.. nor reset the kubeadm.
+  shell: echo {{master_become_pass}} | sudo -S kubectl delete daemonsets,replicasets,services,deployments,pods,rc,ing,statefulset --all --force
+  args:
+    chdir: "{{ home_path }}"
+  tags:
+    - exareme
+
+
+# Not sure if we need to do the following..
+## Let's drain the nodes, just to be sure.
+#- name: Drain master nodes
+#  shell: echo {{master_become_pass}} | sudo -S kubectl drain {{ hostvars['master']['hostname'] }}
+#  tags:
+#    - exareme
+#
+#- name: Drain worker nodes
+#  shell: echo {{master_become_pass}} | sudo -S kubectl drain {{ hostvars[item]['hostname'] }}
+#  with_items: "{{ groups['workers'] }}"
+#  tags:
+#    - exareme
+
+#- name: Remove Dashboard
+#  shell: >
+#    echo {{master_become_pass}} | sudo -S bash -c
+#    'kubectl delete service mip_dashboard ; kubectl delete namespace kubernetes-dashboard'
+#  ignore_errors: true
+#  tags:
+#    - dashboard

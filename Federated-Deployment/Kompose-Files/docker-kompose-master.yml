@@ -1,0 +1,62 @@
+version: '3.2'
+
+#networks:
+#  net-federation:
+#    external:
+#      name: mip-federation
+
+services:
+  exareme-keystore:
+    image: ${CONSUL_IMAGE}:${CONSUL_VERSION}
+    image: progrium/consul
+    command:
+      - -server
+      - -bootstrap
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints:
+          - node.labels.role == master       # Ensures we only start on master nodes
+          - node.labels.name == ${FEDERATION_NODE}
+#    networks:
+#      - "net-federation"
+    ports:
+      - "8500:8500"
+
+  exareme-master:
+    image: ${EXAREME_IMAGE}
+    environment:
+      - CONSULURL=${EXAREME_KEYSTORE}
+      - MASTER_FLAG=${FEDERATION_ROLE}
+      - NODE_NAME=${FEDERATION_NODE}
+      - DOCKER_DATA_FOLDER=${DOCKER_DATA_FOLDER}
+      - DOCKER_METADATA_FOLDER=${DOCKER_DATA_FOLDER}
+      - EXAREME_ACTIVE_WORKERS_PATH=active_workers
+      - EXAREME_MASTER_PATH=master
+      - DATASETS=data
+      - TAG=dev     #dev or prod
+    depends_on:
+      - exareme-keystore
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints:
+          - node.labels.role == master # Ensures we only start on master nodes
+          - node.labels.name == ${FEDERATION_NODE}
+    ports:
+      - target: 9090     # So that we can access the Exareme REST API / interface
+        published: 9090
+        protocol: tcp
+        mode: host
+#    networks:
+#      - "net-federation"
+    volumes:
+      - ${LOCAL_DATA_FOLDER}:${DOCKER_DATA_FOLDER}

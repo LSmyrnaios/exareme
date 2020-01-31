@@ -1,0 +1,8 @@
+---
+- name: Get The Worker join-command
+  shell: echo {{hostvars[my_host]['ansible_become_pass']}} | sudo -S kubeadm token create --print-join-command
+  register: worker_join_command
+
+#- name: DebugPrintJoinCommand
+#  debug:
+#    msg: "Join command: {{worker_join_command}}"  # Not run the debug in production as it reveals the user's password in the console.
