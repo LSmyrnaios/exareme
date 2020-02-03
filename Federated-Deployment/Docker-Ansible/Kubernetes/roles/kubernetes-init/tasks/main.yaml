@@ -45,7 +45,7 @@
 #    msg: kubeadm init failed!
 
 
-# TODO - Test the "ROOK" filesystem... v.0.8 (same AS in DARE)
+# TODO - Test the "ROOK" filesystem... v.0.8 (same as in DARE-platform)
 - name: Configure ROOK Shared storage
   shell: >
     echo {{master_become_pass}} | sudo -S bash -c
