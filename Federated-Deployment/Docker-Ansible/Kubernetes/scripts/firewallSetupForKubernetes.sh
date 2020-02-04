@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # In order not to write the password each time (when using "sudo" for each command)..
-# Do a "sudo -i" and then navigate to the path in which this script exists,
-# then execute it and let it do its job..!
+# Do a "sudo -i" and then navigate to the path in which this script exists and execute it.
 
 systemctl stop firewalld
 systemctl disable firewalld

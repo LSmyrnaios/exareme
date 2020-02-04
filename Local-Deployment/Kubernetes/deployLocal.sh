@@ -135,7 +135,7 @@ do
     if [[ ${answer} == "y" ]]; then
       echo -e "\nInitializing Kubernetes Dashboard..\n"
       sudo kubectl create -f dashboard-admin.yaml # Create admin user.
-      sudo kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-rc3/aio/deploy/recommended.yaml # The beta4 is the last one known to work with kubernetes v.1.15.x
+      sudo kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-rc3/aio/deploy/recommended.yaml
 
       # Open a new terminal and let it serve Kubernetes on localhost.. so that we can access the Kubernetes-Dashboard.
       gnome-terminal -e "sudo kubectl proxy"

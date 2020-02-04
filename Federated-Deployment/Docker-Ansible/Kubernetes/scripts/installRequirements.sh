@@ -27,8 +27,8 @@ curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
 && sudo apt-get update \
 && sudo apt-get install -y kubeadm=1.15.9-00 kubectl=1.15.9-00 kubelet=1.15.9-00
 
-# Install JQ in for commands-ouput-parsing and python for ansible to work
-sudo apt-get install -y jq python
+# Install python in order for ansible to work and JQ for parsing the output of some commands.
+sudo apt-get install -y python jq
 
 
 # Also install kompose version 1.18.0 in the master node (which is used to deploy services on kubernetes)
