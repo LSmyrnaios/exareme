@@ -97,7 +97,7 @@ sudo kubectl create sa default
 sudo kubectl taint nodes ${nodeHostname} node-role.kubernetes.io/master-
 
 mkdir kubeFiles || :
-cd kubeFiles || echo -e "\nCould not 'cd' to \"kubeFiles\"-dir!\n"
+cd kubeFiles || (echo -e "\nCould not 'cd' to 'kubeFiles'-dir!\n" ; exit 1)
 
 # Deploy exareme on the Kubernetes cluster.
 sudo env FEDERATION_NODE=${name} FEDERATION_ROLE=${FEDERATION_ROLE} EXAREME_IMAGE=${imageName}":"${tag} \
@@ -106,7 +106,7 @@ LOCAL_DATA_FOLDER=${LOCAL_DATA_FOLDER} \
 kompose convert -f ../docker-kompose-master.yml
 
 # TODO - Until kompose v.1.21 comes out with the option to save the produced kubeFiles (as requested here: https://github.com/kubernetes/kompose/issues/1179),
-#  keep the < kompose convert - kubectl create > approach for development..
+#  keep the < kompose convert --> kubectl create > approach for development..
 
 ## Deploy Persistent Volume Claim
 # Pre-process it. (some say it should be "ReadWriteMany", although this means that many nodes will write in the same volume, which I don't think is what we want..)
@@ -124,3 +124,45 @@ sudo kubectl create -f exareme-keystore-pod.yaml \
 && sudo kubectl create -f exareme-master-pod.yaml
 
 cd ../
+
+
+#Kubernetes Dashboard
+echo -e "\nDo you wish to run Kubernetes-Dashboard?  [ y/n ]"
+read answer
+
+while true
+do
+    if [[ ${answer} == "y" ]]; then
+      echo -e "\nInitializing Kubernetes Dashboard..\n"
+      sudo kubectl create -f dashboard-admin.yaml # Create admin user.
+      sudo kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-rc3/aio/deploy/recommended.yaml # The beta4 is the last one known to work with kubernetes v.1.15.x
+
+      # Open a new terminal and let it serve Kubernetes on localhost.. so that we can access the Kubernetes-Dashboard.
+      gnome-terminal -e "sudo kubectl proxy"
+      if [[ $? -ne 0 ]]; then
+        echo -e "\nFailed to open a new terminal to serve Kubernetes proxy on localhost.. in order to acces the Kubernetes-Dashboard!\n"
+        break
+      fi
+
+      # Wait some time to enter the password in the new terminal and lew the Dashboard to run on localhost.
+      echo "Waiting some time to enter the password in the new terminal and let the Dashboard to run on localhost.."
+      sleep 13
+
+      # Back here, lets find the token needed to connect to the Dashboard..
+      sudo kubectl -n kubernetes-dashboard describe secret $(sudo kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')
+
+      echo -e "\nUse the token above to access the Dashboard in the page opened in your browser.\n"
+
+      # Open prefeared browser to access the Dashboard.
+      xdg-open http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
+
+      break # Break out of the loop to finish..
+    elif [[ ${answer} == "n" ]]; then
+      break
+    else
+      echo ${answer}" is not a valid answer. Please try again [ y/n ]"
+      read answer
+    fi
+done
+
+echo -e "\nTerminating the script.."
