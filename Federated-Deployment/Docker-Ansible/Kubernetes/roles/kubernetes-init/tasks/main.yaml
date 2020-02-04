@@ -3,23 +3,23 @@
 
 - name: Check If Kubernetes Has Already Been Initialized
   shell: echo {{master_become_pass}} | sudo -S kubectl get componentstatuses
-  register: kubernetes_status
-  failed_when: kubernetes_status.rc != 0
+  register: kubernetes_initial_status
+  failed_when: kubernetes_initial_status.rc != 0
   ignore_errors: true
 
 - name: PrintForSuccessCheck-KubernetesStatus
-  when: kubernetes_status.rc == 0
+  when: kubernetes_initial_status.rc == 0
   debug:
     msg: kubernetes is running!
 
 - name: PrintForFailedCheck-KubernetesStatus
-  when: kubernetes_status.rc != 0
+  when: kubernetes_initial_status.rc != 0
   debug:
     msg: kubernetes is not running.. going to initialize it
 
 
 - name: Initialize Kubernetes
-  when: kubernetes_status.rc != 0
+  when: kubernetes_initial_status.rc != 0
   shell: >
     echo {{master_become_pass}} | sudo -S bash -c
     '(kubeadm reset --force && rm -rf $HOME/.kube/config)
@@ -47,6 +47,7 @@
 
 # TODO - Test the "ROOK" filesystem... v.0.8 (same as in DARE-platform)
 - name: Configure ROOK Shared storage
+  when: kubernetes_initial_status.rc != 0
   shell: >
     echo {{master_become_pass}} | sudo -S bash -c
     '[ ! -d "rook/" ] && git clone --single-branch --branch release-0.8 https://github.com/rook/rook.git
