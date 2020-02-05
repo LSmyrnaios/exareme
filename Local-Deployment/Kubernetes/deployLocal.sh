@@ -12,7 +12,7 @@ FEDERATION_ROLE="master"
 
 flag=0
 #Check if data_path exist
-if [[ -s data_path.txt ]]; then
+if [[ -s ../data_path.txt ]]; then
     :
 else
     echo "What is the data_path for host machine?"
@@ -21,16 +21,16 @@ else
     if [[ "${answer: -1}"  != "/" ]]; then
             answer=${answer}"/"
     fi
-    echo LOCAL_DATA_FOLDER=${answer} > data_path.txt
+    echo LOCAL_DATA_FOLDER=${answer} > ../data_path.txt
 fi
 
-LOCAL_DATA_FOLDER=$(cat data_path.txt | cut -d '=' -f 2)
+LOCAL_DATA_FOLDER=$(cat ../data_path.txt | cut -d '=' -f 2)
 
 
 chmod 755 *.sh
 
 #Check if Exareme docker image exists in file
-if [[ -s ../../Federated-Deployment/Docker-Ansible/group_vars/exareme.yaml ]]; then
+if [[ -s ../exareme.yaml ]]; then
     :
 else
     . ./../exareme.sh
@@ -78,7 +78,7 @@ while read -r line  ; do
 
     image=$(echo ${image})$(echo "$line" | cut -d ':' -d ' ' -d '"' -f 2 -d '"')":"
 
-done < ../../Federated-Deployment/Docker-Ansible/group_vars/exareme.yaml
+done < ../exareme.yaml
 
 #remove the last : from string
 image=${image:0:-1}
@@ -138,6 +138,7 @@ do
       sudo kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-rc3/aio/deploy/recommended.yaml
 
       # Open a new terminal and let it serve Kubernetes on localhost.. so that we can access the Kubernetes-Dashboard.
+      echo -e "\nEnter your password in the poped-up terminal to allow kubernetes to serve on localhost.\n"
       gnome-terminal -e "sudo kubectl proxy"
       if [[ $? -ne 0 ]]; then
         echo -e "\nFailed to open a new terminal to serve Kubernetes proxy on localhost.. in order to acces the Kubernetes-Dashboard!\n"

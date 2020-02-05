@@ -1,6 +1,5 @@
 # To deploy the kubernetes successfully you have to setup the VMs as following:
 
-# all-VM:
 # install the following packages:
 
 # install the docker-ce (check online tutorial)
@@ -40,4 +39,4 @@ curl -L https://github.com/kubernetes/kompose/releases/download/v1.18.0/kompose-
 
 
 # Configure the firewall-ports with the "firewallSetupForKubernetes.sh"
-# For the master-VM, pass the argument <1> when running the script.
+# execute it as Super User after a "sudo -i" and pass the argument <1> to allow one more port which is only for the master.
