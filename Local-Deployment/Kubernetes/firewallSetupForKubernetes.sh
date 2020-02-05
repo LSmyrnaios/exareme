@@ -15,9 +15,7 @@ firewall-cmd --state
 
 echo "Setting Firewallrules for Docker"
 firewall-cmd --permanent --add-port=2376/tcp
-if [[ $# -eq 1 && $1 -eq 1 ]]	# If we run the script on master.
-	then firewall-cmd --permanent --add-port=2377/tcp
-fi
+firewall-cmd --permanent --add-port=2377/tcp && # Add this here -without any argument-condition-, since in local-deploy, kubernetes is running only on master.
 firewall-cmd --permanent --add-port=7946/tcp &&
 firewall-cmd --permanent --add-port=7946/udp &&
 firewall-cmd --permanent --add-port=4987/udp &&
@@ -49,6 +47,5 @@ echo '1' > /proc/sys/net/bridge/bridge-nf-call-iptables
 sysctl -w net.ipv4.ip_forward=1 && sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf && sysctl -p /etc/sysctl.conf 	# Enable 
 
 swapoff -a && sed -i '2s/^/#/' /etc/fstab	# Turn off swap (for Kubernetes)
-
 
 echo "Finished"
