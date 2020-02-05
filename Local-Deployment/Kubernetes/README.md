@@ -2,8 +2,8 @@
 
 ## Install requirements
 Run the following scripts to set-up kubernetes:
-- run the script "installRequirements.sh"
-- run the script "fireWallSetupForKubernetes.sh"
+- Run the script "installRequirements.sh".
+- Enter "SuperUser"-mode (`sudo -i`), navigate to this path and run the script "firewallSetupForKubernetes.sh".
 
 ## Data structure
 Check [here](https://github.com/LSmyrnaios/exareme/blob/kubernetes/Local-Deployment/README.md#data-structure) for information.
