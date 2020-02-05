@@ -37,7 +37,7 @@ firewall-cmd --permanent --add-port=10252/tcp
 firewall-cmd --permanent --add-port=10255/tcp
 firewall-cmd --permanent --add-port=8080/tcp	# For the Kubernetes-Dashboard
 
-firewall-cmd --permanent --add-port=22/tcp	# Allow SSH : Important to not lose remote acces to the VMs!
+firewall-cmd --permanent --add-port=22/tcp	# Allow SSH : Important to not lose remote access to the workstation! Disable if not desired..
 firewall-cmd --reload && systemctl restart firewalld
 
 echo "Enable br filtering"

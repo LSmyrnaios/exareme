@@ -51,11 +51,10 @@ sudo bash -c 'kubeadm init --kubernetes-version=stable --pod-network-cidr=192.16
 
 
 echo -e "\nSetting up storageClass..\n"
-sudo bash -c '[ ! -d "rook/" ] && git clone --single-branch --branch release-0.8 https://github.com/rook/rook.git
-    ; cd rook/cluster/examples/kubernetes/ceph
+sudo bash -c '[ ! -d "rook/" ] && git clone --single-branch --branch release-0.8 https://github.com/rook/rook.git \
+    ; cd rook/cluster/examples/kubernetes/ceph \
     && kubectl create -f operator.yaml && kubectl create -f cluster.yaml && kubectl create -f filesystem.yaml && kubectl create -f storageclass.yaml' \
     && sudo kubectl patch storageclass rook-ceph-block -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
-
 
 #Get hostname of node
 name=$(hostname)

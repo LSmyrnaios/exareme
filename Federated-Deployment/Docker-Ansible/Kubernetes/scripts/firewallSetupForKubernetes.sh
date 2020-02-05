@@ -50,5 +50,4 @@ sysctl -w net.ipv4.ip_forward=1 && sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_
 
 swapoff -a && sed -i '2s/^/#/' /etc/fstab	# Turn off swap (for Kubernetes)
 
-
 echo "Finished"
