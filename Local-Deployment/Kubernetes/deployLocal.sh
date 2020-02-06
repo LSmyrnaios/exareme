@@ -112,7 +112,11 @@ kompose convert -f ../docker-kompose-master.yml
   #sudo chmod +w exareme-master-claim0-persistentvolumeclaim.yaml
   #sudo sed 's/ReadWriteOnce/ReadWriteMany/g' exareme-master-claim0-persistentvolumeclaim.yaml
 # Deploy it.
-sudo kubectl create -f exareme-master-claim0-persistentvolumeclaim.yaml
+
+
+# Deploy custom PV and PVC.
+sudo kubectl create -f ../persistent-volume.yaml  \
+&& sudo kubectl create -f ../exareme-master-claim0-persistentvolumeclaim.yaml
 
 # Deploy services
 sudo kubectl create -f exareme-keystore-service.yaml \
@@ -146,7 +150,7 @@ do
 
       # Wait some time to enter the password in the new terminal and lew the Dashboard to run on localhost.
       echo "Waiting some time to enter the password in the new terminal and let the Dashboard to run on localhost.."
-      sleep 13
+      sleep 15
 
       # Back here, lets find the token needed to connect to the Dashboard..
       sudo kubectl -n kubernetes-dashboard describe secret $(sudo kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')
