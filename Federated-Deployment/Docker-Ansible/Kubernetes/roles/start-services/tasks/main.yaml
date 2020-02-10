@@ -16,9 +16,15 @@
     ; env FEDERATION_NODE={{ leader.stdout }} FEDERATION_ROLE=master
     EXAREME_IMAGE={{ EXAREME_IMAGE }}:{{ EXAREME_TAG }} EXAREME_KEYSTORE={{ EXAREME_KEYSTORE }}
     DOCKER_DATA_FOLDER="{{ DOCKER_DATA_FOLDER }}" LOCAL_DATA_FOLDER="{{ data_path }} "
-    kompose up -f docker-kompose-master.yml'
+    kompose convert -f ../Kompose-Files/docker-kompose-master.yml
+    && sudo kubectl create -f exareme-master-persistentvolume.yaml
+    && sudo kubectl create -f exareme-master-claim0-persistentvolumeclaim-custom.yaml
+    && sudo kubectl create -f exareme-keystore-service.yaml
+    && sudo kubectl create -f exareme-master-service.yaml
+    && sudo kubectl create -f exareme-keystore-pod.yaml
+    && sudo kubectl create -f exareme-master-pod.yaml'
   args:
-    chdir: "{{ home_path }}Kompose-Files/"
+    chdir: "{{ home_path }}KubeFiles/"
   environment:
     FEDERATION_NODE: "{{ leader.stdout }}"
     FEDERATION_ROLE: "master"
@@ -78,9 +84,12 @@
     env FEDERATION_NODE={{ hostvars[item]['hostname'] }} FEDERATION_ROLE=worker
     EXAREME_IMAGE={{ EXAREME_IMAGE }}:{{ EXAREME_TAG }} EXAREME_KEYSTORE={{ EXAREME_KEYSTORE }}
     DOCKER_DATA_FOLDER="{{ DOCKER_DATA_FOLDER }}" LOCAL_DATA_FOLDER="{{ hostvars[item]['data_path'] }}"
-    kompose up -f docker-kompose-worker.yml
+    kompose convert -f ../Kompose-Files/docker-kompose-worker.yml
+    && sudo kubectl create -f exareme-persistentvolume.yaml
+    && sudo kubectl create -f exareme-claim0-persistentvolumeclaim-custom.yaml
+    && sudo kubectl create -f exareme-pod.yaml
   args:
-    chdir: "{{ home_path }}Kompose-Files/"
+    chdir: "{{ home_path }}KubeFiles/"
   environment:
     FEDERATION_NODE: "{{ hostvars[item]['hostname'] }}"
     FEDERATION_ROLE: "worker"

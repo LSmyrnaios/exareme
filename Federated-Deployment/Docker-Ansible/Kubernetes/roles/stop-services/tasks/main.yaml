@@ -38,7 +38,7 @@
 
 - name: Kill remaining Kubernetes staff, but keep it initialized.
 # Do not delete nodes.. nor reset the kubeadm.
-  shell: echo {{master_become_pass}} | sudo -S kubectl delete daemonsets,replicasets,services,deployments,pods,rc,ing,statefulset --all --force
+  shell: echo {{master_become_pass}} | sudo -S kubectl delete daemonsets,replicasets,services,deployments,pods,rc,ing,statefulset,pv,pvc --all --force
   args:
     chdir: "{{ home_path }}"
   tags:
