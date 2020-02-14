@@ -106,6 +106,7 @@ kompose convert -f ../docker-kompose-master.yml
 
 # TODO - Until kompose v.1.21 comes out with the option to save the produced kubeFiles (as requested here: https://github.com/kubernetes/kompose/issues/1179),
 #  keep the < kompose convert --> kubectl create > approach for development..
+# Well, keep in mind that the persistent-volume is not handled well by the "kompose", so we may still have to use custom files..
 
 ## Deploy Persistent Volume Claim
 # Pre-process it. (some say it should be "ReadWriteMany", although this means that many nodes will write in the same volume, which I don't think is what we want..)
@@ -115,7 +116,7 @@ kompose convert -f ../docker-kompose-master.yml
 
 
 # Deploy custom PV and PVC.
-sudo kubectl create -f ../persistent-volume.yaml  \
+sudo kubectl create -f ../exareme-master-persistentvolume.yaml  \
 && sudo kubectl create -f ../exareme-master-claim0-persistentvolumeclaim.yaml
 
 # Deploy services
