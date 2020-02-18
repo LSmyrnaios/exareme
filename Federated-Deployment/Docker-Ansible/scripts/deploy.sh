@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd "${0%/*}" || (echo "Could not chdir to this script's dir!" && exit)  # Change the working directory to the script's directory, when running from other location.
+cd "${0%/*}" || { echo -e "\nCould not chdir to this script's working-dir!\n"; exit 12; }  # Change the working directory to the script's directory, when running from other location.
 
 # Including functions only
 source ./updateFiles.sh include-only

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd "${0%/*}" || (echo "Could not chdir to this script's working-dir!" && exit)  # Change to current working directory, when running from another location.
+cd "${0%/*}" || { echo -e "\nCould not chdir to this script's working-dir!\n"; exit 12; }  # Change to current working directory, when running from another location.
 
 # Key-Value Store
 EXAREME_KEYSTORE="exareme-keystore:8500"
@@ -96,13 +96,13 @@ sudo kubectl create sa default
 sudo kubectl taint nodes ${nodeHostname} node-role.kubernetes.io/master-
 
 mkdir kubeFiles || :
-cd kubeFiles || (echo -e "\nCould not 'cd' to 'kubeFiles'-dir!\n" ; exit 1)
+cd kubeFiles || { echo -e "\nCould not 'cd' to 'kubeFiles'-dir!\n"; exit 1; }
 
 # Deploy exareme on the Kubernetes cluster.
 sudo env FEDERATION_NODE=${name} FEDERATION_ROLE=${FEDERATION_ROLE} EXAREME_IMAGE=${imageName}":"${tag} \
 EXAREME_KEYSTORE=${EXAREME_KEYSTORE} DOCKER_DATA_FOLDER=${DOCKER_DATA_FOLDER} \
 LOCAL_DATA_FOLDER=${LOCAL_DATA_FOLDER} \
-kompose convert -f ../docker-kompose-master.yml
+kompose convert -f ../docker-kompose-master.yml || { echo -e "\nCould not convert \"../docker-kompose-master.yml\"! Please fix it and try again!\n"; exit 111; }
 
 # TODO - Until kompose v.1.21 comes out with the option to save the produced kubeFiles (as requested here: https://github.com/kubernetes/kompose/issues/1179),
 #  keep the < kompose convert --> kubectl create > approach for development..
@@ -150,8 +150,8 @@ do
       fi
 
       # Wait some time to enter the password in the new terminal and lew the Dashboard to run on localhost.
-      echo "Waiting some time to enter the password in the new terminal and let the Dashboard to run on localhost.."
-      sleep 15
+      echo -e "\nWaiting some time to enter the password in the new terminal and let the Dashboard to run on localhost..\n"
+      sleep 17
 
       # Back here, lets find the token needed to connect to the Dashboard..
       sudo kubectl -n kubernetes-dashboard describe secret $(sudo kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')
