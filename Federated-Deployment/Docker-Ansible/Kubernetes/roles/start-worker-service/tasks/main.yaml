@@ -5,7 +5,7 @@
     EXAREME_IMAGE={{ EXAREME_IMAGE }}:{{ EXAREME_TAG }} EXAREME_KEYSTORE={{ EXAREME_KEYSTORE }}
     DOCKER_DATA_FOLDER={{ DOCKER_DATA_FOLDER }} LOCAL_DATA_FOLDER={{ hostvars[my_host]['data_path'] }}
     kompose convert -f ../Kompose-Files/docker-kompose-worker.yml
-    && sudo kubectl create -f exareme-persistentvolume.yaml
+    && sudo kubectl create -f exareme-persistentvolume-custom.yaml
     && sudo kubectl create -f exareme-claim0-persistentvolumeclaim-custom.yaml
     && sudo kubectl create -f exareme-pod.yaml
   args:
