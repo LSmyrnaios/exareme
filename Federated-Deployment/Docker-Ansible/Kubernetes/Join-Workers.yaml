@@ -5,10 +5,10 @@
   become: yes
   become_user: "{{ hostvars['master']['become_user'] }}"
   roles:
-   - worker-join-command
-   - delete-worker-node
+    - delete-worker-node
+    - worker-join-command
   vars:
-    my_host: "{{ lookup('env', 'my_host') }}"   # TODO - Added by me.. not sure if it's ok..
+    my_host: "{{ lookup('env', 'my_host') }}"
     my_name: "{{ hostvars[my_host]['hostname'] }}"
 
 - hosts: '{{ my_host }}'

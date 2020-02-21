@@ -6,6 +6,6 @@
 - name: The node should not be part of kubernetes-cluster
   # The worker cannot set itself out of kubernetes.. only the master can do it for it.. (?)
   shell: >
-    echo {{hostvars[my_host]['ansible_become_pass']}} | sudo -S bash -c
+    echo {{hostvars['master']['ansible_become_pass']}} | sudo -S bash -c
     'kubectl drain {{ my_name }} --force ; kubectl delete node {{ my_name }} --force'
   ignore_errors: true

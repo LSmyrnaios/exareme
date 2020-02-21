@@ -1,8 +1,8 @@
 ---
-- name: Get Hostname For Worker Node
+- name: Get Hostname For Worker Nodes
   shell: echo {{master_become_pass}} | sudo -S kubectl get nodes -o json | jq --raw-output '.items[] | select(.metadata.labels."node-role.kubernetes.io\/master"==null) | .metadata.name'
   # We use "--raw-output" here as we want to have multiple worker-names, each in a separate line.
-  register: hostNames
+  register: workerHostNames
 
 - name:  Add Labels To Worker Node
   shell: >
@@ -11,5 +11,5 @@
     && kubectl label nodes {{ item }} role=worker
     && kubectl label nodes {{ item }} node-role.kubernetes.io/worker='
   with_items:
-   - "{{ hostNames.stdout_lines }}"
+   - "{{ workerHostNames.stdout_lines }}"
   ignore_errors: true
