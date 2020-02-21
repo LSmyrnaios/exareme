@@ -8,6 +8,7 @@
     && sudo kubectl create -f exareme-persistentvolume-custom.yaml
     && sudo kubectl create -f exareme-claim0-persistentvolumeclaim-custom.yaml
     && sudo kubectl create -f exareme-pod.yaml
+    && sudo kubectl create -f exareme-service-custom.yaml
   args:
     chdir: "{{ home_path }}KubeFiles/"
   environment:

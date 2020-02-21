@@ -1,10 +1,5 @@
 version: '3'
 
-#networks:
-#  net-federation:
-#    external:
-#      name: mip-federation
-
 services:
   exareme:
     image: ${EXAREME_IMAGE}
@@ -17,6 +12,9 @@ services:
       - EXAREME_MASTER_PATH=master
       - DATA=data
       - TAG=prod     #dev or prod
+#    depends_on:
+#      - exareme-keystore
+#      - exareme-master
     deploy:
       restart_policy:
         condition: on-failure
@@ -27,7 +25,5 @@ services:
         constraints:
           - node.labels.role == worker # Ensures we only start on worker nodes
           - node.labels.name == ${FEDERATION_NODE}
-#    networks:
-#      - "net-federation"
     volumes:
       - ${LOCAL_DATA_FOLDER}:${DOCKER_DATA_FOLDER}

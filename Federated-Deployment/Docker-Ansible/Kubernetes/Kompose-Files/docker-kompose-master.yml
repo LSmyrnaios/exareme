@@ -1,13 +1,7 @@
 version: '3.2'
 
-#networks:
-#  net-federation:
-#    external:
-#      name: mip-federation
-
 services:
   exareme-keystore:
-    image: ${CONSUL_IMAGE}:${CONSUL_VERSION}
     image: progrium/consul
     command:
       - -server
@@ -22,8 +16,6 @@ services:
         constraints:
           - node.labels.role == master       # Ensures we only start on master nodes
           - node.labels.name == ${FEDERATION_NODE}
-#    networks:
-#      - "net-federation"
     ports:
       - "8500:8500"
 
@@ -56,7 +48,5 @@ services:
         published: 9090
         protocol: tcp
         mode: host
-#    networks:
-#      - "net-federation"
     volumes:
       - ${LOCAL_DATA_FOLDER}:${DOCKER_DATA_FOLDER}
