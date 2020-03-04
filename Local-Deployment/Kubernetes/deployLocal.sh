@@ -110,14 +110,16 @@ kompose convert -f ../docker-kompose-master.yml || { echo -e "\nCould not conver
 
 ## Deploy Persistent Volume Claim
 # Pre-process it. (some say it should be "ReadWriteMany", although this means that many nodes will write in the same volume, which I don't think is what we want..)
-  #sudo chmod +w exareme-master-claim0-persistentvolumeclaim.yaml
-  #sudo sed 's/ReadWriteOnce/ReadWriteMany/g' exareme-master-claim0-persistentvolumeclaim.yaml
+  #sudo chmod +w exareme-master-claim0-persistentvolumeclaim-custom.yaml
+  #sudo sed 's/ReadWriteOnce/ReadWriteMany/g' exareme-master-claim0-persistentvolumeclaim-custom.yaml
 # Deploy it.
 
 
-# Deploy custom PV and PVC.
-sudo kubectl create -f ../exareme-master-persistentvolume.yaml  \
-&& sudo kubectl create -f ../exareme-master-claim0-persistentvolumeclaim.yaml
+# Deploy custom PV.
+sudo kubectl create -f ../exareme-master-persistentvolume-custom.yaml
+
+# Deploy PVC
+sudo kubectl create -f ../exareme-master-claim0-persistentvolumeclaim-custom.yaml
 
 # Deploy services
 sudo kubectl create -f exareme-keystore-service.yaml \
@@ -143,15 +145,14 @@ do
 
       # Open a new terminal and let it serve Kubernetes on localhost.. so that we can access the Kubernetes-Dashboard.
       echo -e "\nEnter your password in the poped-up terminal to allow kubernetes to serve on localhost.\n"
-      gnome-terminal -e "sudo kubectl proxy"
+      sudo gnome-terminal -e "sudo kubectl proxy"
       if [[ $? -ne 0 ]]; then
         echo -e "\nFailed to open a new terminal to serve Kubernetes proxy on localhost.. in order to acces the Kubernetes-Dashboard!\n"
         break
       fi
 
-      # Wait some time to enter the password in the new terminal and lew the Dashboard to run on localhost.
-      echo -e "\nWaiting some time to enter the password in the new terminal and let the Dashboard to run on localhost..\n"
-      sleep 17
+      echo -e "\nWaiting some time to let the Dashboard to run on localhost..\n"
+      sleep 10
 
       # Back here, lets find the token needed to connect to the Dashboard..
       sudo kubectl -n kubernetes-dashboard describe secret $(sudo kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')
