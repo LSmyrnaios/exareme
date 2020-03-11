@@ -85,10 +85,12 @@
     EXAREME_IMAGE={{ EXAREME_IMAGE }}:{{ EXAREME_TAG }} EXAREME_KEYSTORE={{ EXAREME_KEYSTORE }}
     DOCKER_DATA_FOLDER="{{ DOCKER_DATA_FOLDER }}" LOCAL_DATA_FOLDER="{{ hostvars[item]['data_path'] }}"
     kompose convert -f ../Kompose-Files/docker-kompose-worker.yml
-    && sudo kubectl create -f exareme-persistentvolume-custom.yaml
-    && sudo kubectl create -f exareme-claim0-persistentvolumeclaim-custom.yaml
-    && sudo kubectl create -f exareme-pod.yaml
-    && sudo kubectl create -f exareme-service-custom.yaml
+    && sudo python renameResources.py {{ hostvars[item]['hostname'] }}
+    && sudo kubectl create -f {{ hostvars[item]['hostname'] }}/exareme-{{ hostvars[item]['hostname'] }}-persistentvolume-custom.yaml
+    && sudo kubectl create -f {{ hostvars[item]['hostname'] }}/exareme-{{ hostvars[item]['hostname'] }}-claim0-persistentvolumeclaim-custom.yaml
+    && sudo kubectl create -f {{ hostvars[item]['hostname'] }}/exareme-{{ hostvars[item]['hostname'] }}-pod.yaml
+    && sudo kubectl create -f {{ hostvars[item]['hostname'] }}/exareme-{{ hostvars[item]['hostname'] }}-service-custom.yaml
+    && sudo systemctl restart firewalld
   args:
     chdir: "{{ home_path }}KubeFiles/"
   environment:
