@@ -1,11 +1,12 @@
 # Deploy exareme on Kubernetes locally.
 
 ## Install requirements
-Run the following scripts to set-up kubernetes:
-- Run `sudo ./installRequirements.sh`.
-- Run `sudo ./firewallSetupForKubernetes.sh <arg1> <arg2>`.
-  - `<arg1>`: 1 for master (only a master gets initialized in local-deployment)
-  - `<arg2>`: 1 (hard-rest), anything else (soft-reset)
+Run the following scripts to setup kubernetes, keep in mind that only the master gets initialized in local-deployment:
+- Run `sudo ./installRequirements.sh 1`.
+  - `1`: 1 for master
+- Run `sudo ./firewallSetupForKubernetes.sh 1 <arg2>`.
+  - `1`: 1 for master
+  - `<arg2>`: 1 for hard-rest, any other number for soft-reset
 
 ## Data structure
 Check [here](https://github.com/LSmyrnaios/exareme/blob/kubernetes/Local-Deployment/README.md#data-structure) for information.
@@ -21,7 +22,7 @@ Check [here](https://github.com/LSmyrnaios/exareme/blob/kubernetes/Local-Deploym
 
 # Deployment
 
-In the ```Local-Deployment/Kubernetes``` folder, run the ```deployLocal.sh``` to start the deployment.
+In the ```Local-Deployment/Kubernetes``` directory, run the ```deployLocal.sh``` to start the deployment.
 You will be prompted to provide any information needed.
 
 ## Access Kubernetes-Dashboard
