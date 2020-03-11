@@ -28,9 +28,9 @@
     && kubectl apply -f https://docs.projectcalico.org/v3.11/manifests/calico.yaml'
   register: init_result
   failed_when: init_result.rc != 0
-  # TODO - Add a handler to rerun the kube-init.. It is possible that the kube is already initialized but the "kubectl get cs" reports falsly that it isn't
-  # And then the kub-init fails because the configs are already there and it panics.. :-P
-  # In this case, find a way to run: "echo {{master_become_pass}} | sudo -S kubeadm reset --force && echo {{master_become_pass}} | sudo -S rm -rf $HOME/.kube/config" ()
+  # TODO - Add a handler to rerun the kube-init.. It is possible that the kube is already initialized but the "kubectl get cs" reports falsely that it isn't
+  # And then the kube-init fails because the configs are already there and it panics.. :-P
+  # In this case, find a way to run: "echo {{master_become_pass}} | sudo -S (kubeadm reset --force && echo {{master_become_pass}} | sudo -S rm -rf $HOME/.kube/config)"
   # The above command will make sure to hard-reset the kubernetes.
   # Then rerun this task (kube-init).
   run_once: true

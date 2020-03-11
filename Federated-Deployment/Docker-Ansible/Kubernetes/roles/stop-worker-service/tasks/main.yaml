@@ -8,3 +8,14 @@
     kompose down -f docker-kompose-worker.yml
   args:
     chdir: "{{ home_path }}Kompose-Files/"
+
+
+# TODO - Remove custom resources also... all resources containing the worker's hostname..!
+
+# Don't know if it' usefull.. and it's not yet stable..
+#name: Drain worker node
+#  shell: >
+#    echo {{master_become_pass}} | sudo -S kubectl drain {{ hostvars[my_host]['hostname'] }} --delete-local-data --force --ignore-daemonsets
+#    && echo {{master_become_pass}} | sudo -S  kubectl uncordon {{ leader.stdout }}
+#  tags:
+#    - exareme

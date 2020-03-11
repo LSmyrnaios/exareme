@@ -7,5 +7,5 @@
   # The worker cannot set itself out of kubernetes.. only the master can do it for it.. (?)
   shell: >
     echo {{hostvars['master']['ansible_become_pass']}} | sudo -S bash -c
-    'kubectl drain {{ my_name }} --force ; kubectl delete node {{ my_name }} --force'
+    'kubectl drain {{ my_name }} --delete-local-data --force --ignore-daemonsets ; kubectl delete node {{ my_name }} --force'
   ignore_errors: true

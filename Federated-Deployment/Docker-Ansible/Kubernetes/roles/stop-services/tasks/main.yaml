@@ -45,16 +45,20 @@
     - exareme
 
 
-# Not sure if we need to do the following..
-## Let's drain the nodes, just to be sure.
-#- name: Drain master nodes
-#  shell: echo {{master_become_pass}} | sudo -S kubectl drain {{ hostvars['master']['hostname'] }}
+### Don't know if it's usefull.. and it seems to cause problems in pods..
+#- name: Drain worker nodes
+#  shell: >
+#    echo {{master_become_pass}} | sudo -S kubectl drain {{ hostvars[item]['hostname'] }} --delete-local-data --force --ignore-daemonsets
+#    && echo {{master_become_pass}} | sudo -S kubectl uncordon {{ hostvars[item]['hostname'] }}
+#  with_items: "{{ groups['workers'] }}"
 #  tags:
 #    - exareme
 #
-#- name: Drain worker nodes
-#  shell: echo {{master_become_pass}} | sudo -S kubectl drain {{ hostvars[item]['hostname'] }}
-#  with_items: "{{ groups['workers'] }}"
+#
+#- name: Drain master node
+#  shell: >
+#    echo {{master_become_pass}} | sudo -S bash -c
+#    'kubectl drain {{ leader.stdout }} --delete-local-data --force --ignore-daemonsets && kubectl uncordon {{ leader.stdout }}'
 #  tags:
 #    - exareme
 

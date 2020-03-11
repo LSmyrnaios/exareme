@@ -17,12 +17,12 @@
     EXAREME_IMAGE={{ EXAREME_IMAGE }}:{{ EXAREME_TAG }} EXAREME_KEYSTORE={{ EXAREME_KEYSTORE }}
     DOCKER_DATA_FOLDER="{{ DOCKER_DATA_FOLDER }}" LOCAL_DATA_FOLDER="{{ data_path }} "
     kompose convert -f ../Kompose-Files/docker-kompose-master.yml
-    && sudo kubectl create -f exareme-master-persistentvolume-custom.yaml
-    && sudo kubectl create -f exareme-master-claim0-persistentvolumeclaim-custom.yaml
-    && sudo kubectl create -f exareme-keystore-service.yaml
-    && sudo kubectl create -f exareme-master-service.yaml
-    && sudo kubectl create -f exareme-keystore-pod.yaml
-    && sudo kubectl create -f exareme-master-pod.yaml'
+    && kubectl create -f exareme-master-persistentvolume-custom.yaml
+    && kubectl create -f exareme-master-claim0-persistentvolumeclaim-custom.yaml
+    && kubectl create -f exareme-keystore-service.yaml
+    && kubectl create -f exareme-master-service.yaml
+    && kubectl create -f exareme-keystore-pod.yaml
+    && kubectl create -f exareme-master-pod.yaml'
   args:
     chdir: "{{ home_path }}KubeFiles/"
   environment:
