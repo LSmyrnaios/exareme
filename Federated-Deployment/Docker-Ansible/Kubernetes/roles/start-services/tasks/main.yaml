@@ -73,7 +73,6 @@
     && sudo kubectl create -f {{ hostvars[item]['hostname'] }}/exareme-{{ hostvars[item]['hostname'] }}-claim0-persistentvolumeclaim-custom.yaml
     && sudo kubectl create -f {{ hostvars[item]['hostname'] }}/exareme-{{ hostvars[item]['hostname'] }}-pod.yaml
     && sudo kubectl create -f {{ hostvars[item]['hostname'] }}/exareme-{{ hostvars[item]['hostname'] }}-service-custom.yaml
-    && sudo systemctl restart firewalld
   args:
     chdir: "{{ home_path }}KubeFiles/"
   environment:
@@ -84,5 +83,10 @@
     DOCKER_DATA_FOLDER: "{{ DOCKER_DATA_FOLDER }}"
     LOCAL_DATA_FOLDER: "{{ hostvars[item]['data_path'] }}"
   with_items: "{{ groups['workers'] }}"
+  tags:
+    - exareme
+
+- name: Restart firewalld
+  shell: echo {{master_become_pass}} | sudo -S systemctl restart firewalld
   tags:
     - exareme

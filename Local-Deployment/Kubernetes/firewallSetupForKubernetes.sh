@@ -83,6 +83,8 @@ if [[ $runType -eq 1 ]]; then	# If we run the script on master.
   firewall-cmd --permanent --add-port=10251-10252/tcp
   firewall-cmd --permanent --add-port=8001/tcp	# For the Kubernetes-Dashboard
   firewall-cmd --permanent --add-port=8080/tcp  # Used for kubernetes-api
+else
+  firewall-cmd --permanent --add-port=30000-32767/tcp # Only for worker-nodes
 fi
 
 echo "Setting up Firewall-rules for EXAREME master and keystore"
