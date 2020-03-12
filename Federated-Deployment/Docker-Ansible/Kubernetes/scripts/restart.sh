@@ -38,14 +38,16 @@ fi
 if [[ "${answer}" == "1" ]]; then
     echo -e "\nStarting Exareme services..."
 
-	ansible_playbook_start=${ansible_playbook}"../Start-Exareme.yaml --skip-tags portainer,portainerSecure"
+	ansible_playbook_start=${ansible_playbook}"../Start-Exareme.yaml --skip-tags dashboard"
 	${ansible_playbook_start}
 	ansible_playbook_code=$?
 	echo -e "\nExareme services just restarted.."
 elif [[ "${answer}" == "2" ]]; then
-    portainer "restart"
+    #portainer "restart"
+    echo -e "\nDashboard is not yet available..\n"
 elif [[ "${answer}" == "3" ]]; then
-    portainer
+    #portainer
+    echo -e "\nDashboard is not yet available..\n"
 fi
 
 #If status code != 0 an error has occurred
