@@ -3,7 +3,7 @@
 # TODO - Instruct the master to do a "kompose down" for the worker-docker-compose-file.
 
 
-- name: The node should not be part of kubernetes-cluster
+- name: Delete node from kubernetes-cluster
   # The worker cannot set itself out of kubernetes.. only the master can do it for it.. (?)
   shell: >
     echo {{hostvars['master']['ansible_become_pass']}} | sudo -S bash -c

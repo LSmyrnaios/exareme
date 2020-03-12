@@ -23,9 +23,10 @@
   shell: >
     echo {{master_become_pass}} | sudo -S bash -c
     '(kubeadm reset --force && rm -rf $HOME/.kube/config)
+    && kubeadm config images pull
     && kubeadm init --kubernetes-version=stable --pod-network-cidr=192.168.0.0/16
     && (mkdir -p $HOME/.kube && cp -i /etc/kubernetes/admin.conf $HOME/.kube/config && chown $(id -u):$(id -g) $HOME/.kube/config)
-    && kubectl apply -f https://docs.projectcalico.org/v3.11/manifests/calico.yaml'
+    && kubectl apply -f https://docs.projectcalico.org/v3.13/manifests/calico.yaml'
   register: init_result
   failed_when: init_result.rc != 0
   # TODO - Add a handler to rerun the kube-init.. It is possible that the kube is already initialized but the "kubectl get cs" reports falsely that it isn't

@@ -65,7 +65,7 @@ name=${name//./_}
 nodeHostname=$(sudo kubectl get nodes -o json | jq --join-output '.items[] | select(.metadata.labels."node-role.kubernetes.io\/master") | .metadata.name')
 
 echo -e "\nUpdate label name and role for Kubernetes node: "${nodeHostname}
-sudo kubectl label nodes ${nodeHostname} name=${nodeHostname} && sudo kubectl label nodes ${nodeHostname} role=master
+sudo kubectl label nodes ${nodeHostname} name=${nodeHostname} --overwrite && sudo kubectl label nodes ${nodeHostname} role=master --overwrite
 echo -e "\n"
 
 #Read image from file exareme.yaml
@@ -150,6 +150,9 @@ do
         echo -e "\nFailed to open a new terminal to serve Kubernetes proxy on localhost.. in order to acces the Kubernetes-Dashboard!\n"
         break
       fi
+
+      # TODO - Find a way to make it run in the background and have an automated way to kill it as well..!
+      #       sudo kubectl proxy &
 
       echo -e "\nWaiting some time to let the Dashboard to run on localhost..\n"
       sleep 10

@@ -7,9 +7,9 @@
 - name:  Add Labels To Worker Node
   shell: >
     echo {{master_become_pass}} | sudo -S bash -c
-    'kubectl label nodes {{ item }} name={{ item }}
-    && kubectl label nodes {{ item }} role=worker
-    && kubectl label nodes {{ item }} node-role.kubernetes.io/worker='
+    'kubectl label nodes {{ item }} name={{ item }} --overwrite
+    && kubectl label nodes {{ item }} role=worker --overwrite
+    && kubectl label nodes {{ item }} node-role.kubernetes.io/worker= --overwrite'
   with_items:
    - "{{ workerHostNames.stdout_lines }}"
   ignore_errors: true
