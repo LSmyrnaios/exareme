@@ -19,7 +19,7 @@
 
 
 - name: Initialize Kubernetes
-  when: kubernetes_initial_status.rc != 0
+  #when: kubernetes_initial_status.rc != 0
   shell: >
     echo {{master_become_pass}} | sudo -S bash -c
     '(kubeadm reset --force && rm -rf $HOME/.kube/config)

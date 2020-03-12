@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # In order not to write the password each time (when using "sudo" for each command)..
-# Do a "sudo -i" and then navigate to the path in which this script exists and execute it.
+# Run this script with "sudo".
 
 if [[ $# -ne 2 ]]; then
   echo -e "Invalid num of arguments given: $#
@@ -14,7 +14,7 @@ fi
 runType=$1  # 1: master, anything else: worker
 resetMode=$2  # 1: hard, anything else: soft
 
-########################################################################################################3333
+##########################################################################################################
 
 # Shutdown firewalld
 systemctl stop firewalld
@@ -24,7 +24,14 @@ if [[ $resetMode -eq 1 ]]; then  # Delete config files only if needed! Be carefu
   echo -e "\nHard-resetting kubernetes..\n"
   kubeadm reset --force && rm -rf $HOME/.kube/config
   echo -e "\nHard-resetting docker..\n"
-  docker system prune -a -f && docker service rm "$(docker service ls -q)"
+  docker system prune -a -f
+  if [[ $runType -eq 1 ]]; then # Only the master-machine has the authority to run the following.
+    # shellcheck disable=SC2046
+    docker service rm $(docker service ls -q)
+  fi
+
+  # The iptables reset (that Kubernetes suggests), caused one of the worker-VMs (dl025) to crash (not the other though..).. so avoid it in general..
+  # iptables -t nat -F && iptables -t mangle -F && iptables -F && iptables -X
 
   echo -e "\nPurging firewalld..\n"
   apt purge -y firewalld
@@ -39,9 +46,11 @@ fi
 systemctl stop docker kubelet
 
 echo "Setting up Firewall-service.."
+apt purge -y ufw # Purge ufw, in order to use ONLY the firewalld (avoid collisions).
 apt update
 apt install -y firewalld  # If "resetMode"="soft", then here we will just update it if necessary.
-apt autoremove -y
+apt install -y ipip # Used by "calico" network plugin.
+apt autoremove -y # Remove temporal packages.
 systemctl enable firewalld
 systemctl start firewalld
 firewall-cmd --state
@@ -55,16 +64,15 @@ if [[ $runType -eq 1 ]]; then # If we run the script on master.
 fi
 firewall-cmd --permanent --add-port=7946/tcp &&
 firewall-cmd --permanent --add-port=7946/udp &&
-firewall-cmd --permanent --add-port=4987/udp &&
-firewall-cmd --permanent --add-port=80/tcp &&
 firewall-cmd --permanent --add-port=4789/udp &&
-firewall-cmd --zone=public --permanent --add-rich-rule='rule protocol value="esp" accept' # Protocol "50"
+firewall-cmd --permanent --add-port=80/tcp &&
+#firewall-cmd --zone=public --permanent --add-rich-rule='rule protocol value="esp" accept' # Protocol "50"  # It was adviced to be disabled after an  exareme-connection-issue (also in Docker Swarm mode)
+firewall-cmd --zone=public --permanent --add-masquerade
 
 ###############################################################################################################
 
 echo "Setting Firewall-rules for Kubernetes cluster.."
 firewall-cmd --zone=public --permanent --add-rich-rule='rule protocol value="ipip" accept'  # Protocol "4"
-firewall-cmd --zone=public --permanent --add-masquerade
 firewall-cmd --permanent --add-port=10250/tcp # Used by both master and worker.
 firewall-cmd --permanent --add-port=10255/tcp # Used by both master and worker.
 
@@ -91,7 +99,7 @@ firewall-cmd --list-all
 
 ##################################################################################
 
-echo "Enabling br filtering.."
+echo "Enabling br filtering and port forwarding.."
 modprobe br_netfilter
 echo '1' > /proc/sys/net/bridge/bridge-nf-call-iptables
 
@@ -104,6 +112,18 @@ swapoff -a && sed -i '2s/^/#/' /etc/fstab	# Turn off swap (for Kubernetes)
 # Start stopped serveces.
 systemctl start docker kubelet
 systemctl daemon-reload
+systemctl reset-failed
+
+#############################################################################################
+
+#echo "Using kube-iptables-tailer for clearer firewall debugging.."
+# The are problems with this tha need to be addressed..
+# TODO - Check this for updates: https://github.com/box/kube-iptables-tailer/issues/15
+#git clone https://github.com/box/kube-iptables-tailer.git \
+#&& cd kube-iptables-tailer \
+#&& make container \
+#&& chmod +w kube-iptables-tailer && rm -rf kube-iptables-tailer \
+#&& iptables -A CHAIN_NAME -j LOG --log-prefix "KUBERNETES-LOG: "
 
 echo "Finished"
 
@@ -111,6 +131,6 @@ echo "Finished"
 
 # Troubleshootig:
 # If firewalld was updated, you might have go back to your user with "CTRL + D" and run "sudo firewall-cmd --state" to have the firewalld authenticated by your user too (since your user will be connected though Ansible).
-## If the worker container cannotconnect with the master, try this command on the master-node, it should fix the problem:
-# sudo firewall-cmd --reload && sudo systemctl restart firewalld
+## If the worker container cannot connect with the master, try this command on the master-node, it should fix the problem:
+# sudo systemctl restart firewalld
 # TODO - Find a way so this is not needed or to be done automatically..
