@@ -9,4 +9,3 @@
     echo {{master_become_pass}} | sudo -S bash -c
     'kubectl label nodes {{ hostName.stdout }} name={{ hostName.stdout }} --overwrite
     && kubectl label nodes {{ hostName.stdout }} role=master --overwrite'
-  ignore_errors: true # The labels might be already in place.

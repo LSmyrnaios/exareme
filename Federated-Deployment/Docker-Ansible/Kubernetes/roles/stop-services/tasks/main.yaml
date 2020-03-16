@@ -65,9 +65,7 @@
 
 ## TODO - Enable this when Dashboard support gets added.
 #- name: Remove Dashboard
-#  shell: >
-#    echo {{master_become_pass}} | sudo -S bash -c
-#    'kubectl delete namespace kubernetes-dashboard'
+#  shell: echo {{master_become_pass}} | sudo -S kubectl delete namespace kubernetes-dashboard
 #  ignore_errors: true
 #  tags:
 #    - dashboard

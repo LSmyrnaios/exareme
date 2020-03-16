@@ -1,7 +1,5 @@
 ---
 - name: Leaving Kubernetes
-  shell: >
-    echo {{hostvars[my_host]['ansible_become_pass']}} | sudo -S bash -c
-    'kubeadm reset --force'
+  shell: echo {{hostvars[my_host]['ansible_become_pass']}} | sudo -S kubeadm reset --force
   # The "kubeadm reset --force" reverts changes from "kubeadm join" on worker host.
   #ignore_errors: true

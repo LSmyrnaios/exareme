@@ -12,4 +12,3 @@
     && kubectl label nodes {{ item }} node-role.kubernetes.io/worker= --overwrite'
   with_items:
    - "{{ workerHostNames.stdout_lines }}"
-  ignore_errors: true

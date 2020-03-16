@@ -1,11 +1,11 @@
 ---
 
-# TODO - Instruct the master to do a "kompose down" for the worker-docker-compose-file.
+# TODO - Instruct the master to do a "kompose down" for the worker-docker-compose-file and other worker's resources.
 
 
 - name: Delete node from kubernetes-cluster
   # The worker cannot set itself out of kubernetes.. only the master can do it for it.. (?)
   shell: >
     echo {{hostvars['master']['ansible_become_pass']}} | sudo -S bash -c
-    'kubectl drain {{ my_name }} --delete-local-data --force --ignore-daemonsets ; kubectl delete node {{ my_name }} --force'
+    'kubectl drain {{ my_name }} --force ; kubectl delete node {{ my_name }} --force'
   ignore_errors: true
