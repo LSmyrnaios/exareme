@@ -32,7 +32,7 @@ curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
 && echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list \
 && sudo apt-get update \
 && sudo apt-mark unhold kubeadm kubectl kubectl \
-&& sudo apt-get install -y kubeadm=1.15.10-00 kubectl=1.15.10-00 kubelet=1.15.10-00 \
+&& sudo apt-get install -y --allow-downgrades kubeadm=1.15.11-00 kubectl=1.15.11-00 kubelet=1.15.11-00 \
 && sudo apt-mark hold kubeadm kubectl kubectl
 
 # Install python in order for exareme and ansible to work.
