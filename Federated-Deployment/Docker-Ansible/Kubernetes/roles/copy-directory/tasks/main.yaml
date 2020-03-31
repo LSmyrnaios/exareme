@@ -6,9 +6,9 @@
     group: "{{ become_user }}"
     mode: 0755
     
-- name: Copy Directory Containing KubeFiles
+- name: Copy Directory Containing Resources
   copy:
-    src: KubeFiles
+    src: Resources
     dest: "{{ home_path }}"
     owner: "{{ become_user }}"
     group: "{{ become_user }}"

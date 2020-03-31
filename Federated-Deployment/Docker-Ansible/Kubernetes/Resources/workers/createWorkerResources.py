@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+# This program creates the the resource-files for a specific worker (given as command-line-argument).
+
 import os, sys, shutil, string
 
 

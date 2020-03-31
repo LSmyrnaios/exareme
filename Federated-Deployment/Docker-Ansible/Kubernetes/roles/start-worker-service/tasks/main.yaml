@@ -12,7 +12,7 @@
     && sudo kubectl create -f {{ hostvars[my_host]['hostname'] }}/exareme-{{ hostvars[my_host]['hostname'] }}-service-custom.yaml
     && sudo systemctl restart firewalld
   args:
-    chdir: "{{ home_path }}KubeFiles/workers"
+    chdir: "{{ home_path }}Resources/workers"
   environment:
     FEDERATION_NODE: "{{ hostvars[my_host]['hostname'] }}"
     FEDERATION_ROLE: "worker"

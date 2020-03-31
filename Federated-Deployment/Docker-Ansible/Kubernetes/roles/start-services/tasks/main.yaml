@@ -24,7 +24,7 @@
     && kubectl create -f exareme-keystore-pod.yaml
     && kubectl create -f exareme-master-pod.yaml'
   args:
-    chdir: "{{ home_path }}KubeFiles/master"
+    chdir: "{{ home_path }}Resources/master"
   environment:
     FEDERATION_NODE: "{{ leader.stdout }}"
     FEDERATION_ROLE: "master"
@@ -74,7 +74,7 @@
     && sudo kubectl create -f {{ hostvars[item]['hostname'] }}/exareme-{{ hostvars[item]['hostname'] }}-pod.yaml
     && sudo kubectl create -f {{ hostvars[item]['hostname'] }}/exareme-{{ hostvars[item]['hostname'] }}-service-custom.yaml
   args:
-    chdir: "{{ home_path }}KubeFiles/workers"
+    chdir: "{{ home_path }}Resources/workers"
   environment:
     FEDERATION_NODE: "{{ hostvars[item]['hostname'] }}"
     FEDERATION_ROLE: "worker"
