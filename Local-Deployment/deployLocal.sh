@@ -14,6 +14,27 @@ PORTAINER_NAME="mip_portainer"
 
 FEDERATION_ROLE="master"
 
+PUBLIC_IP="127.0.0.1"
+LOCAL_IP="127.0.0.1"
+
+_get_public_ip(){
+	ip=$(wget http://ipinfo.io/ip -qO -)
+	if [ "$ip" != "" ]; then
+		PUBLIC_IP=$ip
+	fi
+}
+
+_get_local_ip(){
+	local iface=$(ip route show|awk '/^default via/ {print $NF" "$5}'|sort|head -1|cut -d ' ' -f 2)
+	local ip=$(ip address show|grep "inet.*$iface"|awk '{print $2}'|cut -d '/' -f1)
+	if [ "$ip" != "" ]; then
+		LOCAL_IP=$ip
+	fi
+}
+
+_get_public_ip
+_get_local_ip
+
 flag=0
 #Check if data_path exist
 if [[ -s data_path.txt ]]; then
@@ -28,8 +49,24 @@ else
     echo LOCAL_DATA_FOLDER=${answer} > data_path.txt
 fi
 
-LOCAL_DATA_FOLDER=$(cat data_path.txt | cut -d '=' -f 2)
+. ./data_path.txt
 
+#Run convert-csv-to-db
+chmod 775 ../Exareme-Docker/files/root/exareme/convert-csv-dataset-to-db.py
+#Removing all previous .db files from the LOCAL_DATA_FOLDER
+echo "Starting the process of creating databases.."
+echo -e "\nDeleting previous databases."
+rm -rf ${LOCAL_DATA_FOLDER}/**/*.db
+
+echo -e "\nParsing csv files in " ${LOCAL_DATA_FOLDER} " to database files. "
+python ../Exareme-Docker/files/root/exareme/convert-csv-dataset-to-db.py -f ${LOCAL_DATA_FOLDER} -t "master"
+#Get the status code from previous command
+py_script=$?
+#If status code != 0 an error has occurred
+if [[ ${py_script} -ne 0 ]]; then
+     echo -e "\nCreation of databases failed. Exareme will not run until fixes be made." >&2
+     exit 1
+fi
 
 chmod 755 *.sh
 
@@ -43,14 +80,14 @@ fi
 #Previous Swarm not found
 if [[ $(sudo docker info | grep Swarm | grep inactive*) != '' ]]; then
     echo -e "\nInitialize Swarm.."
-    sudo docker swarm init --advertise-addr=$(wget http://ipinfo.io/ip -qO -)
+    sudo docker swarm init --advertise-addr=${LOCAL_IP}
 #Previous Swarm found
 else
     echo -e "\nLeaving previous Swarm.."
     sudo docker swarm leave -f
     sleep 1
     echo -e "\nInitialize Swarm.."
-    sudo docker swarm init --advertise-addr=$(wget http://ipinfo.io/ip -qO -)
+    sudo docker swarm init --advertise-addr=${LOCAL_IP}
 fi
 
 #Init network
@@ -62,7 +99,7 @@ fi
 
 #Get hostname of node
 name=$(hostname)
-#. in hostname gives errors, replace with _
+#. if hostname gives errors, replace with _
 name=${name//./_}
 
 #Get node Hostname
@@ -99,70 +136,77 @@ LOCAL_DATA_FOLDER=${LOCAL_DATA_FOLDER} \
 docker stack deploy -c docker-compose-master.yml ${name}
 
 #Portainer
-echo -e "\nDo you wish to run Portainer in a Secure way? (SSL certificate required)  [ y/n ]"
+echo -e "\nDo you wish to run Portainer? [ y/n ]"
 read answer
 
 while true
+
 do
-    if [[ ${answer} == "y" ]];then
-        if [[ -s domain_name.txt ]]; then
-            DOMAIN_NAME=$(cat domain_name.txt | cut -d '=' -f 2)
-            #Run Secure Portainer service
-            flag=1
-            . ./portainer.sh
-        else
-            echo -e "\nWhat is the Domain name for which an SSL certificate created?"
-            read answer
-            command=$(sudo find /etc/letsencrypt/live/${answer}/cert.pem 2> /dev/null)
+    if [[ ${answer} == "y" ]]; then
+    echo -e "\nDo you wish to run Portainer in a Secure way? (SSL certificate required)  [ y/n ]"
+    read answer
 
-            if [[ ${command} == "/etc/letsencrypt/live/"${answer}"/cert.pem" ]]; then
-                DOMAIN_NAME=${answer}
-
-                #Optional to store Domain_name in a file
-                echo -e "\nDo you wish that Domain name to be stored so you will not be asked again? [y/n]"
-                read answer
-                while true
-                do
-                    if [[ ${answer} == "y" ]]; then
-                        echo "Storing information.."
-                        echo DOMAIN_NAME=${DOMAIN_NAME} > domain_name.txt
-                        break
-                    elif [[ ${answer} == "n" ]]; then
-                        echo "You will be asked again to provide the domain name.."
-                        break
-                    else
-                        echo "$answer is not a valid answer! Try again.. [ y/n ]"
-                        read answer
-                    fi
-                done
-
+    while true
+    do
+        if [[ ${answer} == "y" ]];then
+            if [[ -s domain_name.txt ]]; then
+                . ./domain_name.txt
                 #Run Secure Portainer service
                 flag=1
-                . ./portainer.sh
+                command=$(sudo find /etc/letsencrypt/live/${DOMAIN_NAME}/cert.pem 2> /dev/null)
+                if [[ ${command} == "/etc/letsencrypt/live/"${DOMAIN_NAME}"/cert.pem" ]]; then
+                    . ./portainer.sh
+                else
+                    echo -e "\nNo certificate for the Domain name: "${DOMAIN_NAME}" existing in file \"domain_name.txt\". Starting without Portainer.."
+                fi
             else
-                echo -e "\nNo certificate for that Domain name: "${answer}". Starting without Portainer.."
+                echo -e "\nWhat is the Domain name for which an SSL certificate created?"
+                read answer
+                command=$(sudo find /etc/letsencrypt/live/${answer}/cert.pem 2> /dev/null)
+
+                if [[ ${command} == "/etc/letsencrypt/live/"${answer}"/cert.pem" ]]; then
+                    DOMAIN_NAME=${answer}
+
+                    #Optional to store Domain_name in a file
+                    echo -e "\nDo you wish that Domain name to be stored so you will not be asked again? [y/n]"
+                    read answer
+                    while true
+                    do
+                        if [[ ${answer} == "y" ]]; then
+                            echo "Storing information.."
+                            echo DOMAIN_NAME=${DOMAIN_NAME} > domain_name.txt
+                            break
+                        elif [[ ${answer} == "n" ]]; then
+                            echo "You will be asked again to provide the domain name.."
+                            break
+                        else
+                            echo "$answer is not a valid answer! Try again.. [ y/n ]"
+                            read answer
+                        fi
+                    done
+
+                    #Run Secure Portainer service
+                    flag=1
+                    . ./portainer.sh
+                else
+                    echo -e "\nNo certificate for that Domain name: "${answer}". Starting without Portainer.."
+                fi
             fi
+            break
+        elif [[ ${answer} == "n" ]]; then
+            flag=0
+            . ./portainer.sh
+            break
+        else
+            echo ${answer}" is not a valid answer. Try again [ y/n ]"
+            read answer
         fi
-        break
+    done
     elif [[ ${answer} == "n" ]]; then
-        echo -e "\nDo you wish to run Portainer in a NON secure way? [ y/n ]"
-        read answer
-        while true
-        do
-            if [[ ${answer} == "y" ]]; then
-                #Run UnSecure Portainer service
-                flag=0
-                . ./portainer.sh
-                break
-            elif [[ ${answer} == "n" ]]; then
-                break
-            else
-                echo ${answer}" is not a valid answer. Try again [ y/n ]"
-            fi
-        done
-        break
+        :
     else
         echo ${answer}" is not a valid answer. Try again [ y/n ]"
         read answer
-     fi
+    fi
+    break
 done
