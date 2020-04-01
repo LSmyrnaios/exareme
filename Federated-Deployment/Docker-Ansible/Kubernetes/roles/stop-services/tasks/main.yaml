@@ -13,7 +13,7 @@
 - name: Kompose down workers
   shell: >
     echo {{master_become_pass}} | sudo -S
-    env FEDERATION_NODE="{{ hostvars[item]['hostname'] }}"
+    env FEDERATION_NODE="{{ hostvars[item]['hostname'] }}" FEDERATION_ROLE=worker
     EXAREME_IMAGE="{{ EXAREME_IMAGE }}:{{ EXAREME_TAG }}" EXAREME_KEYSTORE="{{ EXAREME_KEYSTORE }}"
     DOCKER_DATA_FOLDER="{{ DOCKER_DATA_FOLDER }}" LOCAL_DATA_FOLDER="{{ hostvars[item]['data_path'] }}"
     kompose down -f docker-kompose-worker.yml
