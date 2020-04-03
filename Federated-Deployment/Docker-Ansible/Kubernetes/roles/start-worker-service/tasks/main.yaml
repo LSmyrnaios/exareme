@@ -3,10 +3,10 @@
     echo {{master_become_pass}} | sudo -S
     env FEDERATION_NODE={{ hostvars[my_host]['hostname'] }} FEDERATION_ROLE=worker
     EXAREME_IMAGE={{ EXAREME_IMAGE }}:{{ EXAREME_TAG }} EXAREME_KEYSTORE={{ EXAREME_KEYSTORE }}
-    DOCKER_DATA_FOLDER={{ DOCKER_DATA_FOLDER }} LOCAL_DATA_FOLDER={{ hostvars[my_host]['data_path'] }}
+    DOCKER_DATA_FOLDER="{{ DOCKER_DATA_FOLDER }}" LOCAL_DATA_FOLDER="{{ hostvars[my_host]['data_path'] }}"
     kompose convert -f ../../Kompose-Files/docker-kompose-worker.yml
     && sudo python createWorkerResources.py {{ hostvars[my_host]['hostname'] }}
-    && sudo kubectl create -f {{ hostvars[my_host]['hostname'] }}/exareme-{{ hostvars[my_host]['hostname'] }}-persistentvolume-custom.yaml
+    && sudo cat {{ hostvars[my_host]['hostname'] }}/exareme-{{ hostvars[my_host]['hostname'] }}-persistentvolume-custom.yaml | sed "s|<data_path>|{{ hostvars[my_host]['data_path'] }}|" | kubectl create -f -
     && sudo kubectl create -f {{ hostvars[my_host]['hostname'] }}/exareme-{{ hostvars[my_host]['hostname'] }}-claim0-persistentvolumeclaim-custom.yaml
     && sudo kubectl create -f {{ hostvars[my_host]['hostname'] }}/exareme-{{ hostvars[my_host]['hostname'] }}-pod.yaml
     && sudo kubectl create -f {{ hostvars[my_host]['hostname'] }}/exareme-{{ hostvars[my_host]['hostname'] }}-service-custom.yaml

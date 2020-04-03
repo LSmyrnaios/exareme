@@ -13,4 +13,4 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/home/lampros/exareme/data/"
+    path: "<data_path>"
