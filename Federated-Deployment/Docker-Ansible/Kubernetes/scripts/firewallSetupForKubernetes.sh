@@ -50,6 +50,7 @@ apt purge -y ufw # Purge ufw, in order to use ONLY the firewalld (avoid collisio
 apt update
 apt install -y firewalld  # If "resetMode"="soft", then here we will just update it, if necessary.
 apt install -y ipip # Used by "calico" network plugin.
+apt install -y ssh # Used for remote access.
 apt autoremove -y # Remove temporal packages.
 systemctl enable firewalld
 systemctl start firewalld
