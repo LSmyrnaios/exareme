@@ -10,8 +10,8 @@ Run the following scripts in all of the machines, to setup the kubernetes-cluste
 <br/>
 
 ## Other requirements
-[Initialize the required files.](https://github.com/LSmyrnaios/exareme/blob/kubernetes/Federated-Deployment/Documentation/Optionals.md)<br/>
-[Setup the test datasets.](https://github.com/LSmyrnaios/exareme/tree/kubernetes/Exareme-Docker/src/mip-algorithms/tests/data)<br/>
+Click [here](https://github.com/LSmyrnaios/exareme/blob/kubernetes/Federated-Deployment/Documentation/Optionals.md)
+for instructions on how to initialize the required files and datasets.<br/>
 <br/>
 **Note** that the "**Portainer**", which is used in the "Swarm"-mode, does not support Kubernetes.<br/>
 The [Kubernetes-Dashboard](https://github.com/kubernetes/dashboard) may be used in the future.
