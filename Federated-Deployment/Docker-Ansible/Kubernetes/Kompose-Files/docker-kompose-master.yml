@@ -17,7 +17,7 @@ services:
           - node.labels.role == master       # Ensures we only start on master nodes
           - node.labels.name == ${FEDERATION_NODE}
     ports:
-      - "8500:8500"
+      - "8500:8500" # Expose this port here, only during dev-mode (change it manually).
 
   exareme-master:
     image: ${EXAREME_IMAGE}
@@ -25,7 +25,9 @@ services:
       - CONSULURL=${EXAREME_KEYSTORE}
       - NODE_NAME=${FEDERATION_NODE}
       - FEDERATION_ROLE=${FEDERATION_ROLE}
-      - ENVIRONMENT_TYPE=PROD     #TEST / DEV / PROD
+      - TEMP_FILES_CLEANUP_TIME=30
+      - NODE_COMMUNICATION_TIMEOUT=30000        # (MILIS) NODE COMMUNICATION WILL DROP IF TIMEOUT IS PASSED
+      - ENVIRONMENT_TYPE=PROD                   # TEST / DEV / PROD
     depends_on:
       - exareme-keystore
     deploy:

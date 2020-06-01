@@ -30,14 +30,11 @@ services:
     image: ${EXAREME_IMAGE}
     environment:
       - CONSULURL=${EXAREME_KEYSTORE}
-      - MASTER_FLAG=${FEDERATION_ROLE}
       - NODE_NAME=${FEDERATION_NODE}
-      - DOCKER_DATA_FOLDER=${DOCKER_DATA_FOLDER}
-      - DOCKER_METADATA_FOLDER=${DOCKER_DATA_FOLDER}
-      - EXAREME_ACTIVE_WORKERS_PATH=active_workers
-      - EXAREME_MASTER_PATH=master
-      - DATA=data
-      - TAG=dev     #dev or prod
+      - FEDERATION_ROLE=${FEDERATION_ROLE}
+      - TEMP_FILES_CLEANUP_TIME=30
+      - NODE_COMMUNICATION_TIMEOUT=30000        # (MILIS) NODE COMMUNICATION WILL DROP IF TIMEOUT IS PASSED
+      - ENVIRONMENT_TYPE=PROD                   # TEST / DEV / PROD
     depends_on:
       - exareme-keystore
     deploy:
