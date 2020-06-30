@@ -6,7 +6,7 @@
 if [[ $# -ne 3 ]]; then
   echo -e "Invalid num of arguments given: $#
   Valid execution:
-    ./firewallSetupForKubernetes.sh <clusterMemberType (1: master, anything else: worker)> <resetMode (1: hard-reset firewalld (remove everything), anything else: soft-reset)>
+    ./firewallSetup.sh <clusterMemberType (1: master, anything else: worker)> <resetMode (1: hard-reset firewalld (remove everything), anything else: soft-reset)>
     <orchestratorType (1: Kubernetes, anything else: Docker Swarm)>
   Please try again..\nExiting.."
   exit 1

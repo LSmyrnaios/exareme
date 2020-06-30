@@ -4,7 +4,7 @@
 Run the following scripts to setup kubernetes, keep in mind that only the master gets initialized in local-deployment:
 - Run `sudo ./installRequirements.sh 1`.
   - `1` (clusterMemberType): **1** for master
-- Run `sudo ./firewallSetupForKubernetes.sh 1 <arg2> 1`.
+- Run `sudo ./firewallSetup.sh 1 <arg2> 1`.
   - `1` (clusterMemberType): **1** for master
   - `<arg2>` (resetMode): **1** for hard-rest, any other number for soft-reset
   - `1` (orchestratorType): **1** for "Kubernetes", other number for "Docker Swarm"

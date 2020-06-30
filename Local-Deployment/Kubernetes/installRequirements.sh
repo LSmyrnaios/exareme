@@ -84,7 +84,7 @@ if [[ $# -eq 1 && $1 -eq 1 ]]; then
   && kompose version
 fi
 
-# Configure the firewall-ports by running "sudo ./firewallSetupForKubernetes.sh <arg1> <arg2> <arg3>"
+# Configure the firewall-ports by running "sudo ./firewallSetup.sh <arg1> <arg2> <arg3>"
 # For the master-VM, pass the argument <arg1> = 1, otherwise give any other number.
 # For hard-reset of the firewall-system, pass the argument <arg2> = 1, otherwise give any other number.
 # For the Kubernetes orchestrator, pass the argument <arg3> = 1, otherwise for docker swarm give any other number.
