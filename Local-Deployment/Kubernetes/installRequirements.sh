@@ -1,5 +1,15 @@
 #!/bin/bash
 
+
+if [[ $# -gt 1 ]]; then
+  echo -e "Invalid num of arguments given: $#
+  Valid execution:
+    ./installRequirements.sh <clusterMemberType (1: master, anything else: worker)>
+  The argument is optional, you may not set it, if you want it to run on a \"worker\"
+  Please try again..\nExiting.."
+  exit 1
+fi
+
 # To deploy the kubernetes successfully you have to setup the VMs as following:
 
 # ALL-VMs: install the following packages:
@@ -65,14 +75,16 @@ if [[ $# -eq 1 && $1 -eq 1 ]]; then
   sudo apt-get install -y ansible jq git
 
   # Also install kompose version 1.18.0 in the master node (which is used to deploy services on kubernetes)
-  # Newer version 1.21.0, in order to work, it needs an extra parameter each time for server-declaration, but this parameter's support is missing for "kompose down"..
-  # ektos ki an energopoihsw to "loopback address" sto firewalld..(?)
+  # Versions 1.19.0 and 1.20.0 do not work.
+  # Newest version: 1.21.0, in order to work, it needs an extra parameter each time for server-declaration, but this parameter's support is missing for "kompose down"..
+  # Wait for v.1.22.0 or maybe try to enable the "loopback address" in firewalld.
   curl -L https://github.com/kubernetes/kompose/releases/download/v1.18.0/kompose-linux-amd64 -o kompose \
   && chmod +x kompose \
   && sudo mv ./kompose /usr/local/bin/kompose \
   && kompose version
 fi
 
-# Configure the firewall-ports by running "sudo ./firewallSetupForKubernetes.sh <arg1> <arg2>"
-# For the master-VM, pass the argument <arg1> = 1, other wise give any other number.
-# For hard-reset of the firewall-system, pass the argument <arg2> = 1, other wise give any other number.
+# Configure the firewall-ports by running "sudo ./firewallSetupForKubernetes.sh <arg1> <arg2> <arg3>"
+# For the master-VM, pass the argument <arg1> = 1, otherwise give any other number.
+# For hard-reset of the firewall-system, pass the argument <arg2> = 1, otherwise give any other number.
+# For the Kubernetes orchestrator, pass the argument <arg3> = 1, otherwise for docker swarm give any other number.

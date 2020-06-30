@@ -3,10 +3,11 @@
 ## Install requirements
 Run the following scripts in all of the machines, to setup the kubernetes-cluster:
 - Run **`sudo ./scripts/installRequirements.sh <arg>`**.
-    - `<arg>`: **1** for master, any other number for a worker
-- Run **`sudo ./scripts/firewallSetupForKubernetes.sh <arg1> <arg2>`**.
-  - `<arg1>`: **1** for master, any other number for a worker
-  - `<arg2>`: **1** for hard-rest, any other number for soft-reset
+    - `<arg>` (clusterMemberType): **1** for master, any other number for a worker
+- Run **`sudo ./scripts/firewallSetupForKubernetes.sh <arg1> <arg2> <arg3>`**.
+  - `<arg1>` (clusterMemberType): **1** for master, any other number for a worker
+  - `<arg2>` (resetMode): **1** for hard-rest, any other number for soft-reset
+  - `<arg3>` (orchestratorType): **1** for "Kubernetes", other number for "Docker Swarm"
 <br/>
 
 ## Other requirements
