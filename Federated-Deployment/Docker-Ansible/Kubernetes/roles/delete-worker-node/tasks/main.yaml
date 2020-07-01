@@ -5,7 +5,5 @@
 
 - name: Delete node from kubernetes-cluster
   # The worker cannot set itself out of kubernetes.. only the master can do it for it.. (?)
-  shell: >
-    echo {{hostvars['master']['ansible_become_pass']}} | sudo -S bash -c
-    'kubectl drain {{ my_name }} --force ; kubectl delete node {{ my_name }} --force'
+  shell: kubectl drain {{ my_name }} --force ; kubectl delete node {{ my_name }} --force
   ignore_errors: true

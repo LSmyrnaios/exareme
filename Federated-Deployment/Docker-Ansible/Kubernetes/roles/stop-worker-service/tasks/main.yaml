@@ -1,7 +1,6 @@
 ---
 - name: Stop Exareme Spesific Worker
   shell: >
-    echo {{master_become_pass}} | sudo -S
     env FEDERATION_NODE={{ my_name }} FEDERATION_ROLE=worker
     EXAREME_IMAGE={{ EXAREME_IMAGE }}:{{ EXAREME_TAG }} EXAREME_KEYSTORE={{ EXAREME_KEYSTORE }}
     DOCKER_DATA_FOLDER="{{ DOCKER_DATA_FOLDER }}" LOCAL_DATA_FOLDER="{{ hostvars[my_host]['data_path'] }}"
@@ -15,7 +14,7 @@
 # Don't know if it' usefull.. and it's not yet stable..
 #name: Drain worker node
 #  shell: >
-#    echo {{master_become_pass}} | sudo -S kubectl drain {{ hostvars[my_host]['hostname'] }} --delete-local-data --force --ignore-daemonsets
+#    kubectl drain {{ hostvars[my_host]['hostname'] }} --delete-local-data --force --ignore-daemonsets
 #    && echo {{master_become_pass}} | sudo -S  kubectl uncordon {{ leader.stdout }}
 #  tags:
 #    - exareme

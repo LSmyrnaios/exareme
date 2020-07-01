@@ -5,7 +5,5 @@
 
 - name: Join Kubernetes
   # It's advisable to always run "kubeadm reset" before "kubeadm join"
-  shell: >
-    echo {{hostvars[my_host]['ansible_become_pass']}} | sudo -S bash -c
-    'kubeadm reset --force && swapoff -a && {{ hostvars['master']['worker_join_command']['stdout'] }}'
+  shell: kubeadm reset --force && swapoff -a && {{ hostvars['master']['worker_join_command']['stdout'] }}
   register: join

@@ -1,7 +1,7 @@
 ---
 - name: Find Leader
 # Maybe the nodes are unlabeled at this point, so use this type of hostname extraction.
-  shell: echo {{master_become_pass}} | sudo -S kubectl get nodes -o json | jq --join-output '.items[] | select(.metadata.labels."node-role.kubernetes.io\/master") | .metadata.name'
+  shell: kubectl get nodes -o json | jq --join-output '.items[] | select(.metadata.labels."node-role.kubernetes.io\/master") | .metadata.name'
   register: leader
   tags:
     - exareme
@@ -11,8 +11,7 @@
 - name: Run Exareme Master
   # Un-taint the master node in order for master-pods to get assigned to the master-node.
   shell: >
-    echo {{master_become_pass}} | sudo -S bash -c
-    'kubectl taint nodes --all node-role.kubernetes.io/master-
+    kubectl taint nodes --all node-role.kubernetes.io/master-
     ; env FEDERATION_NODE={{ leader.stdout }} FEDERATION_ROLE=master
     EXAREME_IMAGE={{ EXAREME_IMAGE }}:{{ EXAREME_TAG }} EXAREME_KEYSTORE={{ EXAREME_KEYSTORE }}
     DOCKER_DATA_FOLDER="{{ DOCKER_DATA_FOLDER }}" LOCAL_DATA_FOLDER="{{ data_path }}"
@@ -22,7 +21,7 @@
     && kubectl create -f exareme-keystore-service.yaml
     && kubectl create -f exareme-master-service.yaml
     && kubectl create -f exareme-keystore-pod.yaml
-    && kubectl create -f exareme-master-pod.yaml'
+    && kubectl create -f exareme-master-pod.yaml
   args:
     chdir: "{{ home_path }}Resources/master"
   environment:
@@ -39,7 +38,7 @@
 # TODO - Add Kubernetes Dashboard, as Portainer does not support Kubernetes.
 
 #- name: Remove Dashboard Service if it already exists
-#  shell: echo {{master_become_pass}} | sudo -S kubectl delete ns kubernetes-dashboard
+#  shell: kubectl delete ns kubernetes-dashboard
 #  ignore_errors: true
 #  tags:
 #    -dashboard
@@ -47,9 +46,8 @@
 #- name: Run Dashboard Service
 #  # TODO - We have to make the arrangements for authorization.. then run the following:
 #  shell: >
-#    echo {{master_become_pass}} | sudo -S bash -c
-#    'kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-rc5/aio/deploy/recommended.yaml
-#    ; kubectl proxy &'
+#    kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-rc5/aio/deploy/recommended.yaml
+#    ; kubectl proxy &
 ## The above "&" will let the dashboard run in the background
 #  tags:
 #    -dashboard
@@ -63,7 +61,6 @@
 - name: Run Exareme Workers
   # No need to un-taint the worker nodes, as no taints exist for them.
   shell: >
-    echo {{master_become_pass}} | sudo -S
     env FEDERATION_NODE={{ hostvars[item]['hostname'] }} FEDERATION_ROLE=worker
     EXAREME_IMAGE={{ EXAREME_IMAGE }}:{{ EXAREME_TAG }} EXAREME_KEYSTORE={{ EXAREME_KEYSTORE }}
     DOCKER_DATA_FOLDER="{{ DOCKER_DATA_FOLDER }}" LOCAL_DATA_FOLDER="{{ hostvars[item]['data_path'] }}"
@@ -87,6 +84,6 @@
     - exareme
 
 - name: Restart firewalld
-  shell: echo {{master_become_pass}} | sudo -S systemctl restart firewalld
+  shell: systemctl restart firewalld
   tags:
     - exareme

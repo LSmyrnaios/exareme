@@ -2,7 +2,7 @@
 # TODO - Find a way to automatically run all commands with sudo and give the password automatically, so the shell-cmds here will be clearer..
 
 - name: Check If Kubernetes Has Already Been Initialized
-  shell: echo {{master_become_pass}} | sudo -S kubectl get componentstatuses
+  shell: kubectl get componentstatuses
   register: kubernetes_initial_status
   failed_when: kubernetes_initial_status.rc != 0
   ignore_errors: true
@@ -21,13 +21,13 @@
 - name: Initialize Kubernetes
   #when: kubernetes_initial_status.rc != 0
   shell: >
-    echo {{master_become_pass}} | sudo -S bash -c
-    '(kubeadm reset --force && rm -rf $HOME/.kube/config)
+    (kubeadm reset --force && rm -rf $HOME/.kube/config)
     && kubeadm config images pull
     && kubeadm init --kubernetes-version=stable --pod-network-cidr=192.168.0.0/16
     && (mkdir -p $HOME/.kube && cp -i /etc/kubernetes/admin.conf $HOME/.kube/config && chown $(id -u):$(id -g) $HOME/.kube/config)
-    && kubectl apply -f https://docs.projectcalico.org/v3.13/manifests/calico.yaml'
+    && kubectl apply -f https://docs.projectcalico.org/v3.13/manifests/calico.yaml
   register: init_result
+  # Version 3.15 of calico is not working with Kubernetes 1.15.x
   failed_when: init_result.rc != 0
   # TODO - Add a handler to rerun the kube-init.. It is possible that the kube is already initialized but the "kubectl get cs" reports falsely that it isn't
   # And then the kube-init fails because the configs are already there and it panics.. :-P
@@ -50,9 +50,8 @@
 - name: Configure ROOK Shared storage
   when: kubernetes_initial_status.rc != 0
   shell: >
-    echo {{master_become_pass}} | sudo -S bash -c
-    '[ ! -d "rook/" ] && git clone --single-branch --branch release-0.8 https://github.com/rook/rook.git
+    [ ! -d "rook/" ] && git clone --single-branch --branch release-0.8 https://github.com/rook/rook.git
     ; cd rook/cluster/examples/kubernetes/ceph
     && kubectl create -f operator.yaml && kubectl create -f cluster.yaml && kubectl create -f filesystem.yaml && kubectl create -f storageclass.yaml'
-    && echo {{master_become_pass}} | sudo -S kubectl patch storageclass rook-ceph-block -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+    && echo {{master_become_pass}} | sudo -S kubectl patch storageclass rook-ceph-block -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}
   run_once: true

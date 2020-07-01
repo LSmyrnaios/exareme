@@ -1,6 +1,5 @@
 - name: Run Exareme Worker
   shell: >
-    echo {{master_become_pass}} | sudo -S
     env FEDERATION_NODE={{ hostvars[my_host]['hostname'] }} FEDERATION_ROLE=worker
     EXAREME_IMAGE={{ EXAREME_IMAGE }}:{{ EXAREME_TAG }} EXAREME_KEYSTORE={{ EXAREME_KEYSTORE }}
     DOCKER_DATA_FOLDER="{{ DOCKER_DATA_FOLDER }}" LOCAL_DATA_FOLDER="{{ hostvars[my_host]['data_path'] }}"

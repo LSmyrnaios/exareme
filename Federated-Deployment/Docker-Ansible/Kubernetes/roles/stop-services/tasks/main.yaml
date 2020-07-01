@@ -4,7 +4,7 @@
 ---
 - name: Find Leader
   # Maybe the nodes are unlabeled at this point, so use this type of hostname extraction.
-  shell: echo {{master_become_pass}} | sudo -S kubectl get nodes -o json | jq --join-output '.items[] | select(.metadata.labels."node-role.kubernetes.io\/master") | .metadata.name'
+  shell: kubectl get nodes -o json | jq --join-output '.items[] | select(.metadata.labels."node-role.kubernetes.io\/master") | .metadata.name'
   register: leader
   tags:
     - exareme
@@ -12,7 +12,6 @@
 # Stop the workers before stopping the master.
 - name: Kompose down workers
   shell: >
-    echo {{master_become_pass}} | sudo -S
     env FEDERATION_NODE="{{ hostvars[item]['hostname'] }}" FEDERATION_ROLE=worker
     EXAREME_IMAGE="{{ EXAREME_IMAGE }}:{{ EXAREME_TAG }}" EXAREME_KEYSTORE="{{ EXAREME_KEYSTORE }}"
     DOCKER_DATA_FOLDER="{{ DOCKER_DATA_FOLDER }}" LOCAL_DATA_FOLDER="{{ hostvars[item]['data_path'] }}"
@@ -25,7 +24,6 @@
 
 - name: Kompose down master
   shell: >
-    echo {{master_become_pass}} | sudo -S
     env FEDERATION_NODE={{ leader.stdout }} FEDERATION_ROLE=master
     EXAREME_IMAGE={{ EXAREME_IMAGE }}:{{ EXAREME_TAG }} EXAREME_KEYSTORE={{ EXAREME_KEYSTORE }}
     DOCKER_DATA_FOLDER="{{ DOCKER_DATA_FOLDER }}" LOCAL_DATA_FOLDER="{{ data_path }}"
@@ -38,7 +36,7 @@
 
 - name: Kill remaining Kubernetes staff, but keep it initialized.
 # Do not delete nodes.. nor reset the kubeadm.
-  shell: echo {{master_become_pass}} | sudo -S kubectl delete daemonsets,replicasets,services,deployments,pods,rc,ing,statefulset,pv,pvc --all --force
+  shell: kubectl delete daemonsets,replicasets,services,deployments,pods,rc,ing,statefulset,pv,pvc --all --force
   args:
     chdir: "{{ home_path }}"
   tags:
@@ -48,7 +46,7 @@
 ### Don't know if it's usefull.. and it seems to cause problems in pods..
 #- name: Drain worker nodes
 #  shell: >
-#    echo {{master_become_pass}} | sudo -S kubectl drain {{ hostvars[item]['hostname'] }} --delete-local-data --force --ignore-daemonsets
+#    kubectl drain {{ hostvars[item]['hostname'] }} --delete-local-data --force --ignore-daemonsets
 #    && echo {{master_become_pass}} | sudo -S kubectl uncordon {{ hostvars[item]['hostname'] }}
 #  with_items: "{{ groups['workers'] }}"
 #  tags:
@@ -56,16 +54,14 @@
 #
 #
 #- name: Drain master node
-#  shell: >
-#    echo {{master_become_pass}} | sudo -S bash -c
-#    'kubectl drain {{ leader.stdout }} --delete-local-data --force --ignore-daemonsets && kubectl uncordon {{ leader.stdout }}'
+#  shell: kubectl drain {{ leader.stdout }} --delete-local-data --force --ignore-daemonsets && kubectl uncordon {{ leader.stdout }}
 #  tags:
 #    - exareme
 
 
 ## TODO - Enable this when Dashboard support gets added.
 #- name: Remove Dashboard
-#  shell: echo {{master_become_pass}} | sudo -S kubectl delete namespace kubernetes-dashboard
+#  shell: kubectl delete namespace kubernetes-dashboard
 #  ignore_errors: true
 #  tags:
 #    - dashboard
