@@ -47,7 +47,7 @@
 #- name: Drain worker nodes
 #  shell: >
 #    kubectl drain {{ hostvars[item]['hostname'] }} --delete-local-data --force --ignore-daemonsets
-#    && echo {{master_become_pass}} | sudo -S kubectl uncordon {{ hostvars[item]['hostname'] }}
+#    && kubectl uncordon {{ hostvars[item]['hostname'] }}
 #  with_items: "{{ groups['workers'] }}"
 #  tags:
 #    - exareme

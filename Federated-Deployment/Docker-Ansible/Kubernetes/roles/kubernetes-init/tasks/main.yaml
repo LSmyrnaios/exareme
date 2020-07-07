@@ -31,7 +31,7 @@
   failed_when: init_result.rc != 0
   # TODO - Add a handler to rerun the kube-init.. It is possible that the kube is already initialized but the "kubectl get cs" reports falsely that it isn't
   # And then the kube-init fails because the configs are already there and it panics.. :-P
-  # In this case, find a way to run: "echo {{master_become_pass}} | sudo -S (kubeadm reset --force && echo {{master_become_pass}} | sudo -S rm -rf $HOME/.kube/config)"
+  # In this case, find a way to run: "kubeadm reset --force && rm -rf $HOME/.kube/config"
   # The above command will make sure to hard-reset the kubernetes.
   # Then rerun this task (kube-init).
   run_once: true
@@ -52,6 +52,6 @@
   shell: >
     [ ! -d "rook/" ] && git clone --single-branch --branch release-0.8 https://github.com/rook/rook.git
     ; cd rook/cluster/examples/kubernetes/ceph
-    && kubectl create -f operator.yaml && kubectl create -f cluster.yaml && kubectl create -f filesystem.yaml && kubectl create -f storageclass.yaml'
-    && echo {{master_become_pass}} | sudo -S kubectl patch storageclass rook-ceph-block -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}
+    && kubectl create -f operator.yaml && kubectl create -f cluster.yaml && kubectl create -f filesystem.yaml && kubectl create -f storageclass.yaml
+    && kubectl patch storageclass rook-ceph-block -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
   run_once: true
