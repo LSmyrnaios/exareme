@@ -70,8 +70,12 @@ firewall-cmd --state
 if [[ $orchestratorType -eq 1 ]]; then  # If we have Kubernetes
   echo "Setting Firewall-rules for Kubernetes cluster.."
   firewall-cmd --zone=public --permanent --add-rich-rule='rule protocol value="ipip" accept'  # Protocol "4" for "calico"-network-plugin.
+  #firewall-cmd --add-masquerade --permanent
   firewall-cmd --permanent --add-port=10250/tcp # Used by both master and worker.
   firewall-cmd --permanent --add-port=10255/tcp # Used by both master and worker.
+  #firewall-cmd --permanent --add-port=8472/udp
+
+  #firewall-cmd --permanent --add-port=8443/tcp  # For ingress controller.
 
   # Ports for Weave Net Network Plugin (used in DARE). TODO - Check why it doesn't work..
   #firewall-cmd --permanent --add-port=6783/tcp
@@ -80,11 +84,15 @@ if [[ $orchestratorType -eq 1 ]]; then  # If we have Kubernetes
   if [[ $clusterMemberType -eq 1 ]]; then	# If we run the script on master.
     firewall-cmd --permanent --add-port=6443/tcp
     firewall-cmd --permanent --add-port=2379-2380/tcp
-    firewall-cmd --permanent --add-port=10248/tcp # Not sure if it's needed.
+    #firewall-cmd --permanent --add-port=10248/tcp # Not sure if it's needed.
     firewall-cmd --permanent --add-port=10251-10252/tcp
 
     firewall-cmd --permanent --add-port=8080/tcp  # Used for kubernetes-api
     firewall-cmd --permanent --add-port=8001/tcp	# For the Kubernetes-Dashboard
+
+    # only if you want NodePorts exposed on control plane IP as well for master
+    #firewall-cmd --permanent --add-port=30000-32767/tcp
+
   else
     firewall-cmd --permanent --add-port=30000-32767/tcp # Only for worker-nodes
   fi

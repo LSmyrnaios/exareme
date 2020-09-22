@@ -10,6 +10,7 @@
 #Todo if we have multiple masters and maybe leader.stdout -> leader.stdout_lines with_items? (original todo from exareme)
 - name: Run Exareme Master
   # Un-taint the master node in order for master-pods to get assigned to the master-node.
+  # Add ingress: && kubectl apply -f nginx-ingress.yaml
   shell: >
     kubectl taint nodes --all node-role.kubernetes.io/master-
     ; env FEDERATION_NODE={{ leader.stdout }} FEDERATION_ROLE=master

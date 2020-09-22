@@ -28,6 +28,8 @@
     && kubectl apply -f https://docs.projectcalico.org/v3.13/manifests/calico.yaml
   register: init_result
   # Version 3.15 of calico is not working with Kubernetes 1.15.x
+  # && kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+  # && kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/130af33510882ae62c89277f2ad0baca50e0fafe/deploy/static/mandatory.yaml
   failed_when: init_result.rc != 0
   # TODO - Add a handler to rerun the kube-init.. It is possible that the kube is already initialized but the "kubectl get cs" reports falsely that it isn't
   # And then the kube-init fails because the configs are already there and it panics.. :-P
