@@ -4,12 +4,12 @@
     EXAREME_IMAGE={{ EXAREME_IMAGE }}:{{ EXAREME_TAG }} EXAREME_KEYSTORE={{ EXAREME_KEYSTORE }}
     DOCKER_DATA_FOLDER="{{ DOCKER_DATA_FOLDER }}" LOCAL_DATA_FOLDER="{{ hostvars[my_host]['data_path'] }}"
     kompose convert -f ../../Kompose-Files/docker-kompose-worker.yml
-    && sudo python createWorkerResources.py {{ hostvars[my_host]['hostname'] }}
-    && sudo cat {{ hostvars[my_host]['hostname'] }}/exareme-{{ hostvars[my_host]['hostname'] }}-persistentvolume-custom.yaml | sed "s|<data_path>|{{ hostvars[my_host]['data_path'] }}|" | kubectl create -f -
-    && sudo kubectl create -f {{ hostvars[my_host]['hostname'] }}/exareme-{{ hostvars[my_host]['hostname'] }}-claim0-persistentvolumeclaim-custom.yaml
-    && sudo kubectl create -f {{ hostvars[my_host]['hostname'] }}/exareme-{{ hostvars[my_host]['hostname'] }}-pod.yaml
-    && sudo kubectl create -f {{ hostvars[my_host]['hostname'] }}/exareme-{{ hostvars[my_host]['hostname'] }}-service-custom.yaml
-    && sudo systemctl restart firewalld
+    && python createWorkerResources.py ${FEDERATION_NODE}
+    && cat ${FEDERATION_NODE}/exareme-${FEDERATION_NODE}-persistentvolume-custom.yaml | sed "s|<data_path>|${LOCAL_DATA_FOLDER}|" | kubectl create -f -
+    && kubectl create -f ${FEDERATION_NODE}/exareme-${FEDERATION_NODE}-claim0-persistentvolumeclaim-custom.yaml
+    && kubectl create -f ${FEDERATION_NODE}/exareme-${FEDERATION_NODE}-pod.yaml
+    && kubectl create -f ${FEDERATION_NODE}/exareme-${FEDERATION_NODE}-service-custom.yaml
+    && systemctl restart firewalld
   args:
     chdir: "{{ home_path }}Resources/workers"
   environment:

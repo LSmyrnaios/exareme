@@ -1,6 +1,4 @@
 ---
-# TODO - Find a way to automatically run all commands with sudo and give the password automatically, so the shell-cmds here will be clearer..
-
 - name: Check If Kubernetes Has Already Been Initialized
   shell: kubectl get componentstatuses
   register: kubernetes_initial_status
