@@ -32,8 +32,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import static madgik.exareme.master.gateway.GatewayConstants.COOKIE_ALGORITHM_EXECUTION_ID;
+import static madgik.exareme.master.gateway.async.handler.HBP.HBPQueryConstants.serverErrorOccurred;
 
 public class HBPQueryHandler implements HttpAsyncRequestHandler<HttpRequest> {
 
@@ -102,6 +104,11 @@ public class HBPQueryHandler implements HttpAsyncRequestHandler<HttpRequest> {
             log.info("Executing algorithm: " + algorithmName + " with key: " + algorithmKey);
 
             HashMap<String, String> algorithmParameters = HBPQueryHelper.getAlgorithmParameters(request);
+            log.info("Request for algorithm: " + algorithmName);
+            if (algorithmParameters != null) {
+                for (Map.Entry<String, String> parameter : algorithmParameters.entrySet())
+                    log.info("Parameter: " + parameter.getKey() + ", with value: " + parameter.getValue());
+            }
 
             ContainerProxy[] algorithmContainers = HBPQueryHelper.getAlgorithmNodes(algorithmParameters);
 
@@ -170,23 +177,28 @@ public class HBPQueryHandler implements HttpAsyncRequestHandler<HttpRequest> {
             response.setStatusCode(HttpStatus.SC_BAD_REQUEST);
             response.setEntity(createErrorResponseEntity(e.getMessage(), errorType));
 
-        } catch (JsonSyntaxException e) {
-            log.error("Could not parse the algorithms properly.");
-            String errorType = HBPQueryHelper.ErrorResponse.ErrorResponseTypes.error;
-            response.setStatusCode(HttpStatus.SC_BAD_REQUEST);
-            response.setEntity(createErrorResponseEntity("Could not parse the algorithms properly.", errorType));
-
         } catch (UserException e) {
             log.error(e.getMessage());
             String errorType = HBPQueryHelper.ErrorResponse.ErrorResponseTypes.user_error;
             response.setStatusCode(HttpStatus.SC_BAD_REQUEST);
             response.setEntity(createErrorResponseEntity(e.getMessage(), errorType));
 
-        } catch (Exception e) {
-            log.error(e.getMessage());
+        } catch (JsonSyntaxException e) {
+            log.error("Could not parse the algorithms properly.");
             String errorType = HBPQueryHelper.ErrorResponse.ErrorResponseTypes.error;
             response.setStatusCode(HttpStatus.SC_BAD_REQUEST);
-            response.setEntity(createErrorResponseEntity(e.getMessage(), errorType));
+            response.setEntity(createErrorResponseEntity(serverErrorOccurred, errorType));
+
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            for (StackTraceElement stack : e.getStackTrace()) {
+                log.error("Stack: " + stack.toString());
+                log.error("Stack class: " + stack.getClassName() + ", name: " + stack.getMethodName() + ", line: " + stack.getLineNumber());
+            }
+            log.error(e.getStackTrace());
+            String errorType = HBPQueryHelper.ErrorResponse.ErrorResponseTypes.error;
+            response.setStatusCode(HttpStatus.SC_BAD_REQUEST);
+            response.setEntity(createErrorResponseEntity(serverErrorOccurred, errorType));
         }
     }
 
