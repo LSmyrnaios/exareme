@@ -1,6 +1,3 @@
-# TODO - What's the equivalent for Kubernetes?
-# TODO - I should delete all services, all pods and all nodes and deployments.. and others
-# kubectl delete daemonsets,replicasets,services,deployments,pods,rc,ing,statefulset --all
 ---
 - name: Find Leader
   # Maybe the nodes are unlabeled at this point, so use this type of hostname extraction.
@@ -9,32 +6,8 @@
   tags:
     - exareme
 
-# Stop the workers before stopping the master.
-- name: Kompose down workers
-  shell: >
-    env FEDERATION_NODE="{{ hostvars[item]['hostname'] }}" FEDERATION_ROLE=worker
-    EXAREME_IMAGE="{{ EXAREME_IMAGE }}:{{ EXAREME_TAG }}" EXAREME_KEYSTORE="{{ EXAREME_KEYSTORE }}"
-    DOCKER_DATA_FOLDER="{{ DOCKER_DATA_FOLDER }}" LOCAL_DATA_FOLDER="{{ hostvars[item]['data_path'] }}"
-    kompose down -f docker-kompose-worker.yml
-  with_items: "{{ groups['workers'] }}"
-  args:
-    chdir: "{{ home_path }}Kompose-Files/"
-  tags:
-    - exareme
 
-- name: Kompose down master
-  shell: >
-    env FEDERATION_NODE={{ leader.stdout }} FEDERATION_ROLE=master
-    EXAREME_IMAGE={{ EXAREME_IMAGE }}:{{ EXAREME_TAG }} EXAREME_KEYSTORE={{ EXAREME_KEYSTORE }}
-    DOCKER_DATA_FOLDER="{{ DOCKER_DATA_FOLDER }}" LOCAL_DATA_FOLDER="{{ data_path }}"
-    kompose down -f docker-kompose-master.yml
-  args:
-    chdir: "{{ home_path }}Kompose-Files/"
-  tags:
-    - exareme
-
-
-- name: Kill remaining Kubernetes staff, but keep it initialized.
+- name: Kill Kubernetes staff, but keep it initialized.
 # Do not delete nodes.. nor reset the kubeadm.
   shell: kubectl delete daemonsets,replicasets,services,deployments,pods,rc,ing,statefulset,pv,pvc --all --force
   args:

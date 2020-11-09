@@ -7,7 +7,7 @@
     && python createWorkerResources.py ${FEDERATION_NODE}
     && cat ${FEDERATION_NODE}/exareme-${FEDERATION_NODE}-persistentvolume-custom.yaml | sed "s|<data_path>|${LOCAL_DATA_FOLDER}|" | kubectl create -f -
     && kubectl create -f ${FEDERATION_NODE}/exareme-${FEDERATION_NODE}-claim0-persistentvolumeclaim-custom.yaml
-    && kubectl create -f ${FEDERATION_NODE}/exareme-${FEDERATION_NODE}-pod.yaml
+    && kubectl create -f ${FEDERATION_NODE}/exareme-${FEDERATION_NODE}-deployment.yaml
     && kubectl create -f ${FEDERATION_NODE}/exareme-${FEDERATION_NODE}-service-custom.yaml
     && systemctl restart firewalld
   args:

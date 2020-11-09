@@ -2,7 +2,7 @@ version: '3.2'
 
 services:
   exareme-keystore:
-    image: bitnami/consul:1.8.3
+    image: bitnami/consul:1.8.4
     ports:         # Used for Debugging
       - target: 8500
         published: 8500
@@ -26,14 +26,10 @@ services:
       - NODE_COMMUNICATION_TIMEOUT=30000        # (MILIS) NODE COMMUNICATION WILL DROP IF TIMEOUT IS PASSED
       - ENVIRONMENT_TYPE=PROD                   # TEST / DEV / PROD
       - LOG_LEVEL=DEBUG                          # INFO / DEBUG
+      - CONVERT_CSVS=TRUE                       # TRUE / FALSE
     depends_on:
       - exareme-keystore
     deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
       placement:
         constraints:
           - node.labels.role == master # Ensures we only start on master nodes

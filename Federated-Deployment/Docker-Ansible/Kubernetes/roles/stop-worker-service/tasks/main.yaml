@@ -4,14 +4,25 @@
     env FEDERATION_NODE={{ my_name }} FEDERATION_ROLE=worker
     EXAREME_IMAGE={{ EXAREME_IMAGE }}:{{ EXAREME_TAG }} EXAREME_KEYSTORE={{ EXAREME_KEYSTORE }}
     DOCKER_DATA_FOLDER="{{ DOCKER_DATA_FOLDER }}" LOCAL_DATA_FOLDER="{{ hostvars[my_host]['data_path'] }}"
-    kompose down -f docker-kompose-worker.yml
+    kompose delete -f ../../Kompose-Files/docker-kompose-worker.yml
+    && kubectl delete -f ${FEDERATION_NODE}/exareme-${FEDERATION_NODE}-persistentvolume-custom.yaml
+    && kubectl delete -f ${FEDERATION_NODE}/exareme-${FEDERATION_NODE}-claim0-persistentvolumeclaim-custom.yaml
+    && kubectl delete -f ${FEDERATION_NODE}/exareme-${FEDERATION_NODE}-deployment.yaml
+    && kubectl delete -f ${FEDERATION_NODE}/exareme-${FEDERATION_NODE}-service-custom.yaml
   args:
-    chdir: "{{ home_path }}Kompose-Files/"
+    chdir: "{{ home_path }}Resources/workers"
+  environment:
+    FEDERATION_NODE: "{{ my_name }}"
+    FEDERATION_ROLE: "worker"
+    EXAREME_IMAGE: "{{ EXAREME_IMAGE }}:{{ EXAREME_TAG }}"
+    EXAREME_KEYSTORE: "{{ EXAREME_KEYSTORE }}"
+    DOCKER_DATA_FOLDER: "{{ DOCKER_DATA_FOLDER }}"
+    LOCAL_DATA_FOLDER: "{{ hostvars[my_host]['data_path'] }}"
 
 
 # TODO - Remove custom resources also... all resources containing the worker's hostname..!
 
-# Don't know if it' usefull.. and it's not yet stable..
+# Don't know if it's useful.. and it's not yet stable..
 #name: Drain worker node
 #  shell: >
 #    kubectl drain {{ hostvars[my_host]['hostname'] }} --delete-local-data --force --ignore-daemonsets

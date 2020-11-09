@@ -74,11 +74,8 @@ if [[ $# -eq 1 && $1 -eq 1 ]]; then
   # Install "ansible" to run the commands on the VMs, "jq" for parsing the output of some kubernetes-commands and "git" to clone repos.
   sudo apt-get install -y ansible jq git
 
-  # Also install kompose version 1.18.0 in the master node (which is used to deploy services on kubernetes)
-  # Versions 1.19.0 and 1.20.0 do not work.
-  # Newest version: 1.21.0, in order to work, it needs an extra parameter each time for server-declaration, but this parameter's support is missing for "kompose down"..
-  # Wait for v.1.22.0 or maybe try to enable the "loopback address" in firewalld.
-  curl -L https://github.com/kubernetes/kompose/releases/download/v1.18.0/kompose-linux-amd64 -o kompose \
+  # Also install kompose version 1.22.0 in the master node (which is used to deploy services on kubernetes)
+  curl -L https://github.com/kubernetes/kompose/releases/download/v1.22.0/kompose-linux-amd64 -o kompose \
   && chmod +x kompose \
   && sudo mv ./kompose /usr/local/bin/kompose \
   && kompose version
