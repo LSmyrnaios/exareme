@@ -17,7 +17,7 @@ MAX_ROWS_TO_INSERT_INTO_SQL = 100
 # This metadata dictionary contains only code and sqltype so that processing will be faster
 # It also includes the subjectcode
 def createMetadataDictionary(CDEsMetadataPath):
-    CDEsMetadata = open(CDEsMetadataPath)
+    CDEsMetadata = open(CDEsMetadataPath, "r", encoding="utf-8")
     metadataJSON = json.load(CDEsMetadata)
 
     metadataDictionary = {}
@@ -44,7 +44,7 @@ def addGroupVariablesToDictionary(groupMetadata, metadataDictionary):
 
 # This metadata list is used to create the metadata table. It contains all the known information for each variable.
 def createMetadataList(CDEsMetadataPath):
-    CDEsMetadata = open(CDEsMetadataPath)
+    CDEsMetadata = open(CDEsMetadataPath, "r", encoding="utf-8")
     metadataJSON = json.load(CDEsMetadata)
 
     metadataList = []
@@ -80,7 +80,7 @@ def addGroupVariablesToList(groupMetadata, metadataList):
             if 'enumerations' in variable:
                 enumerations = []
                 for enumeration in variable['enumerations']:
-                    enumerations.append(unicode(enumeration['code']))
+                    enumerations.append(str(enumeration['code']))
                 variableDictionary['enumerations'] = ','.join(enumerations)
             else:
                 variableDictionary['enumerations'] = None
@@ -178,7 +178,7 @@ def createDataTable(metadataDictionary, cur):
 
 def addCSVInTheDataTable(csvFilePath, metadataDictionary, cur):
     # Open the csv
-    csvFile = open(csvFilePath, 'r')
+    csvFile = open(csvFilePath, "r", encoding="utf-8")
     csvReader = csv.reader(csvFile)
 
     # Create the csv INSERT statement
@@ -190,12 +190,11 @@ def addCSVInTheDataTable(csvFilePath, metadataDictionary, cur):
         columnsString += ', ' + column
     columnsSectionOfSQLQuery = 'INSERT INTO DATA (' + columnsString + ') VALUES '
 
-
     # Insert data
-    number_of_rows = 0
+    numberOfRows = 0
     valuesSectionOfSQLQuery = '('
     for row in csvReader:
-        number_of_rows += 1
+        numberOfRows += 1
         for (value, column) in zip(row, csvHeader):
             if metadataDictionary[column] == 'text':
                 valuesSectionOfSQLQuery += "'" + value + "', "
@@ -203,7 +202,7 @@ def addCSVInTheDataTable(csvFilePath, metadataDictionary, cur):
                 valuesSectionOfSQLQuery += 'null, '
             else:
                 valuesSectionOfSQLQuery += value + ", "
-        if (number_of_rows % int(MAX_ROWS_TO_INSERT_INTO_SQL) == 0 or next(csvReader, None) == None):
+        if numberOfRows % int(MAX_ROWS_TO_INSERT_INTO_SQL) == 0:
             valuesSectionOfSQLQuery = valuesSectionOfSQLQuery[:-2]
             valuesSectionOfSQLQuery += ');'
 
@@ -211,10 +210,20 @@ def addCSVInTheDataTable(csvFilePath, metadataDictionary, cur):
                 cur.execute(columnsSectionOfSQLQuery + valuesSectionOfSQLQuery)
             except:
                 findErrorOnBulkInsertQuery(cur, valuesSectionOfSQLQuery, csvHeader, metadataDictionary, csvFilePath)
+                raise ValueError("Error inserting the CSV to the database.")
             valuesSectionOfSQLQuery = '('
         else:
             valuesSectionOfSQLQuery = valuesSectionOfSQLQuery[:-2]
             valuesSectionOfSQLQuery += '),('
+
+    if numberOfRows % int(MAX_ROWS_TO_INSERT_INTO_SQL) != 0:
+        valuesSectionOfSQLQuery = valuesSectionOfSQLQuery[:-3]
+        valuesSectionOfSQLQuery += ');'
+
+        try:
+            cur.execute(columnsSectionOfSQLQuery + valuesSectionOfSQLQuery)
+        except:
+            findErrorOnBulkInsertQuery(cur, valuesSectionOfSQLQuery, csvHeader, metadataDictionary, csvFilePath)
 
 
 def findErrorOnBulkInsertQuery(cur, valuesOfQuery, csvHeader, metadataDictionary, csvFilePath):
@@ -225,6 +234,7 @@ def findErrorOnBulkInsertQuery(cur, valuesOfQuery, csvHeader, metadataDictionary
     # Call findErrorOnSqlQuery for each row in the bulk query
     for row in valuesOfQuery.split('),('):
         findErrorOnSqlQuery(cur, row.split(','), csvHeader, metadataDictionary, csvFilePath)
+
 
 def findErrorOnSqlQuery(cur, row, csvHeader, metadataDictionary, csvFilePath):
     # Insert the code column into the database and then update it for each row to find where the problem is
@@ -257,14 +267,19 @@ def main():
     parser = ArgumentParser()
     parser.add_argument('-f', '--pathologiesFolderPath', required=True,
                         help='The folder with the pathologies data.')
-    parser.add_argument('-t', '--nodeType', required=True,
-                        help='Is this a master or a worker node?'
+    parser.add_argument('-p', '--pathologies', required=False,
+                        help='Specific pathologies to parse. (Example: "dementia,tbi"'
                         )
     args = parser.parse_args()
     pathologiesFolderPath = os.path.abspath(args.pathologiesFolderPath)
 
     # Get all pathologies
     pathologiesList = next(os.walk(pathologiesFolderPath))[1]
+    
+    if args.pathologies != None:
+        pathologiesToConvert = args.pathologies.split(",")
+        pathologiesList = list(set(pathologiesList) & set(pathologiesToConvert))
+    print ("Converting csvs for pathologies: " + ",".join(pathologiesList))
 
     # Create the datasets db for each pathology
     for pathologyName in pathologiesList:
